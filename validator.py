@@ -15,6 +15,16 @@ class Validator():
 
 
     @staticmethod
+    def get_sq_string_from_2D_board(row, col):
+        output = None
+        number_list = ['8', '7', '6', '5', '4', '3', '2', '1']
+        if (row >= 0 and row <= 7) and (col >= 0 and col <= 7):
+            letter = chr(ord(97 + col))
+            number = number_list[col]
+        return letter + number
+
+        
+    @staticmethod
     def generate_game_field(game_file_path):
         '''
         This function opens .csv file and outputs corresponding "game field dictionary".
