@@ -23,7 +23,6 @@ class Validator():
             number = number_list[col]
         return letter + number
 
-        
     @staticmethod
     def generate_game_field(game_file_path):
         '''

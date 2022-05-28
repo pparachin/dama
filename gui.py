@@ -1,7 +1,6 @@
 import pygame as pg
 
 
-
 class GUI:
 
     def __init__(self, WIDTH, HEIGHT, DIMENSION, SQ_SIZE, images, FPS, WHITE, BLACK, RED, SWIDTH, board):
