@@ -1,5 +1,6 @@
 import pygame as pg
-
+from validator import Validator
+from alias import PlayerColor
 
 class GUI:
 
@@ -31,9 +32,9 @@ class GUI:
         self._images["homescreen"] = pg.image.load("data/homescreen.png")
       
 
-    def drawGameState(self, screen, selectedSQ, board):
+    def drawGameState(self, screen, selectedSQ, board, finalSQ):
         self.drawBoard(screen) #draw squares on the board
-        self.highlightSQ(screen, selectedSQ, board) #highlightes selected square
+        self.highlightSQ(screen, selectedSQ, board, finalSQ) #highlightes selected square
         self.drawPieces(screen, self._board) #draw pieces on the top of the squares
         self.drawScore(screen, 0, 0) #draw players score on the right window
 
@@ -106,7 +107,7 @@ class GUI:
         screen.blit(quitGame, (self._WIDTH + 30, 750))
 
 
-    def highlightSQ(self, screen, selectedSQ, board):
+    def highlightSQ(self, screen, selectedSQ, board, finalSQ):
         if selectedSQ != () and selectedSQ[1] < 8:
             r = selectedSQ[0]
             c = selectedSQ[1]
@@ -119,11 +120,14 @@ class GUI:
 
     def run_game(self):
         pg.init()
+        validator = Validator()
         screen = pg.display.set_mode((self._WIDTH + self._SWIDTH, self._HEIGHT))
         clock = pg.time.Clock()
         self.loadimages()
         self.menu(screen)
         selectedSQ = () #last clicked square (row, col)
+        finalSQ = ()
+        validMoves = []
         playerClicks = [] #most recent 2 clicks of the player
         run = True
 
@@ -134,8 +138,15 @@ class GUI:
 
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     location = pg.mouse.get_pos() #(x, y) position of mouse clicked
-                    col = location[0]//self._SQ_SIZE
-                    row = location[1]//self._SQ_SIZE
+                    col = int(location[0]//self._SQ_SIZE)
+                    row = int(location[1]//self._SQ_SIZE)
+                    print(self._board)
+                    validMoves = validator.find_all_valid_moves(validator.translate_GUI_board_to_Validator_board(self._board), PlayerColor.WHITE)
+                    # for move in validMoves:
+                    #     if move[0] == Validator.get_sq_string_from_2D_board(row, col):
+                    #         finalSQ[0] = Validator.get_rowcol_from_sq_string(move[-1])[0]
+                    #         finalSQ[1] = Validator.get_rowcol_from_sq_string(move[-1])[1]
+
                     if selectedSQ == (row, col): #selected square is the same as previous one
                         selectedSQ = () #deselect
                         playerClicks = []
@@ -145,7 +156,7 @@ class GUI:
                     if len(playerClicks) == 2: #check if it was 2nd click
                         pass
 
-            self.drawGameState(screen, selectedSQ, self._board)
+            self.drawGameState(screen, selectedSQ, self._board, finalSQ)
             clock.tick(self._FPS)
             pg.display.flip()
 
