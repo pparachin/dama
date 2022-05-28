@@ -21,8 +21,17 @@ class Validator():
         if (row >= 0 and row <= 7) and (col >= 0 and col <= 7):
             letter = chr(ord(97 + col))
             number = number_list[col]
-        return letter + number
+        output = letter + number
+        return output
 
+    @staticmethod
+    def get_rowcol_from_sq_string(sq_string):
+        output = None
+        column = ord(sq_string[0]) - 97
+        row = sq_string[1] - 1
+        output = (row, column)
+
+        return output
 
     @staticmethod
     def generate_game_field(game_file_path):
@@ -54,13 +63,14 @@ class Validator():
 
     def translate_GUI_board_to_Validator_board(self, gui_board):
         output = {}
-        for row in gui_board:
-            for column in row:
+        for row in range(len(gui_board)):
+            for column in gui_board[row]:
                 sq = self.get_sq_string_from_2D_board(row, column)
                 if gui_board[row][column] == "-":
                     output[sq] = None
                 else:
                     output[sq] = gui_board[row][column]
+        return output
 
 
     @staticmethod
