@@ -1,3 +1,5 @@
+import copy
+
 from alias import PlayerColor
 from alias import GameDirection
 
@@ -6,10 +8,39 @@ class Validator():
 
 
     def __init__(self):
-        pass
+        ...
 
 
-    def validate_base_setup(self, game_file_path):
+    @staticmethod
+    def generate_game_field(game_file_path):
+        '''
+        This function opens .csv file and outputs corresponding "game field dictionary".
+        !!! Note: This function function does NOT validate if the text inside file is correct. !!! 
+        '''
+        output = None
+        playing_field = {}
+        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        for letter in letters:
+            for number in range(1, 9):
+                tag = str(letter) + str(number)
+                playing_field[tag] = None
+        
+        # putting figures in
+        try:
+            with open(game_file_path) as game_file:
+                game_file_contents = game_file.read().splitlines()
+                for line in game_file_contents:
+                    playing_field[line[0:2]] = line[3:]
+                game_file.close()
+                output = []
+        except FileNotFoundError:
+            output = None
+
+        return playing_field
+
+
+    @staticmethod
+    def validate_base_setup(game_file_path):
         '''
         returns 0 if input file path leads to .csv file containing correct setup for Czech dama
         returns 1 for incorrect game setup
@@ -93,12 +124,15 @@ class Validator():
                             break
                     output = 0
 
-                elif setup_v2:
-                    for line in game_file_contents:
-                        if line not in base_setups[1]:
-                            output = 1
-                            break
-                    output = 0
+                # This section was commented out due to setup_v2 NOT being 
+                # allowed by http://damweb.cz/pravidla/cdfull.html rules.
+                #
+                # elif setup_v2:
+                #     for line in game_file_contents:
+                #         if line not in base_setups[1]:
+                #             output = 1
+                #             break
+                #     output = 0
 
                 else:
                     output = 1
@@ -111,7 +145,119 @@ class Validator():
         return output
 
 
-    def find_all_valid_moves(self, playing_field, player_to_turn, game_direction):
+    @staticmethod
+    def get_move_direction(move):
+        '''
+        Takes simple move on input (that means a list of squares, only consideres first and last).
+        Returns string representing direction (ne/nw/se/sw) according to correct board position where:
+        a1 is bottom left corner
+        a8 is top left corner
+        h8 is top right corner
+        h1 is bottom right corner
+        '''
+        output, up, right = None, None, None
+
+        if ord(move[0][0]) < ord(move[1][0]): right = True
+        else: right = False
+        
+        if int(move[0][1]) < int(move[1][1]): up = True
+        else: up = False
+
+        if up and right: output = 'ne'
+        elif up and not right: output = 'nw'
+        elif not up and right: output = 'se'
+        elif not up and not right: output = 'sw'
+
+        return output
+
+
+    def span(self, move, direction=None):
+        '''
+        Takes simple move on input (that means a list of squares, only consideres first and last).
+        Returns list of squares from start of the move (not including start square itself) to the end of the board.
+        It is possible to input single square as a one-item list and direction as a string (nw/ne/sw/se).
+        '''
+        output = []
+        border_letter = move[0][0]
+        border_number = move[0][1]
+
+        if direction: match_input = direction
+        else: match_input = self.get_move_direction(move)
+
+        match match_input:
+            case 'ne':
+                while ord(border_letter) <= ord('h') and int(border_number) <= 8:
+                    border_letter = chr(ord(border_letter)+1)
+                    border_number = str(int(border_number)+1)
+                output = self.find_inbetween_coords(move[0], (border_letter+border_number))
+
+            case 'nw':
+                while ord(border_letter) >= ord('a') and int(border_number) <= 8:
+                    border_letter = chr(ord(border_letter)-1)
+                    border_number = str(int(border_number)+1)
+                output = self.find_inbetween_coords(move[0], (border_letter+border_number))
+
+            case 'se':
+                while ord(border_letter) <= ord('h') and int(border_number) >= 1:
+                    border_letter = chr(ord(border_letter)+1)
+                    border_number = str(int(border_number)-1)
+                output = self.find_inbetween_coords(move[0], (border_letter+border_number))
+
+            case 'sw':
+                while ord(border_letter) >= ord('a') and int(border_number) >= 1:
+                    border_letter = chr(ord(border_letter)-1)
+                    border_number = str(int(border_number)-1)
+                output = self.find_inbetween_coords(move[0], (border_letter+border_number))
+        
+        return output        
+
+
+    @staticmethod
+    def find_inbetween_coords(start, end):
+        '''
+        Returns list of inbetween coordinates.
+        Since this is a private method, no safety measures were included,
+        works only for correct input == only coords on the same diagonal.
+        '''       
+        output = []
+        possible_letters = []
+        possible_numbers = []
+
+        temp = ord(end[0]) - 1
+        while ord(start[0]) < temp:
+            possible_letters.append(chr(temp))
+            temp = temp - 1
+        
+        temp = ord(end[0]) + 1
+        while ord(start[0]) > temp:
+            possible_letters.append(chr(temp))
+            temp = temp + 1
+            
+        temp = int(end[1]) - 1
+        while int(start[1]) < temp:
+            possible_numbers.append(temp)
+            temp = temp - 1
+
+
+        temp = int(end[1]) + 1
+        while int(start[1]) > temp:
+            possible_numbers.append(temp)
+            temp = temp + 1
+
+        for i in range(len(possible_letters)):
+            output.append(str(possible_letters[i]) + str(possible_numbers[i]))
+
+        return output
+
+
+    def get_bounded_line(self, start, end):
+        output = [start]
+        output.append(self.find_inbetween_coords([start, end]))
+        output.append(end)
+        return output
+
+
+    def find_all_valid_moves(self, playing_field, player_to_turn, game_direction=GameDirection.WHITE_IS_DOWN):
         """
         Generates all possible moves for each figure but returns only valid moves.
         Output depends on which player is to turn.
@@ -131,7 +277,7 @@ class Validator():
         assert direction in [GameDirection.WHITE_IS_DOWN, GameDirection.WHITE_IS_UP]
 
         ### GENERATING ALL MOVES ###
-        moves = [] # contains touples (from, to)
+        moves = [] # contains lists [from, inbetween1, inbetween2, ... , to]
 
         # which figures to evaluate
         figures_for_evaluation = []
@@ -152,9 +298,9 @@ class Validator():
                         # (cL = column on the left from figure,
                         # lD = line down from figure etc.)
                         cL, cR, lD, lU = None, None, None, None
-                        if (ord(square[0]) - 61 - i) >= 0:
+                        if (ord(square[0]) - 97 - i) >= 0:
                             cL = letters[letters.index(square[0]) - i]
-                        if (ord(square[0]) - 61 + i) <= (len(letters) - 1):
+                        if (ord(square[0]) - 97 + i) <= (len(letters) - 1):
                             cR = letters[letters.index(square[0]) + i]
                         if (int(square[1]) - i) >= 1:
                             lD = int(square[1]) - i
@@ -164,23 +310,106 @@ class Validator():
                             lU = str(lU)
 
                         # appending moves considering game direction (which player started up)
-                        if (game_direction == GameDirection.WHITE_IS_UP and player_to_turn == PlayerColor.WHITE) or (game_direction == GameDirection.WHITE_IS_DOWN and player_to_turn == PlayerColor.BLACK):
-                            if cL and lD:
-                                moves.append( (square, (cL + lD)) )
-                            if cR and lD:
-                                moves.append( (square, (cR + lD)) )
-                        else:
-                            if cL and lU:
-                                moves.append( (square, (cL + lU)) )
-                            if cR and lU:
-                                moves.append( (square, (cR + lU)) )
+                        if (game_direction == GameDirection.WHITE_IS_UP and player_to_turn == PlayerColor.WHITE) or (game_direction == GameDirection.WHITE_IS_DOWN and player_to_turn == PlayerColor.BLACK) or (len(figure) > 1):
+                            if cL and lD:# and playing_field[(cL + lD)] not in figures_for_evaluation:
+                                    moves.append( [square, (cL + lD)] )
+                            if cR and lD:# and playing_field[(cR + lD)] not in figures_for_evaluation:
+                                moves.append( [square, (cR + lD)] )
 
-        # removing moves leading to squares occupated by own figures
-        moves_to_be_removed = []
+                        if (game_direction == GameDirection.WHITE_IS_UP and player_to_turn == PlayerColor.BLACK) or (game_direction == GameDirection.WHITE_IS_DOWN and player_to_turn == PlayerColor.WHITE) or (len(figure) > 1):
+                            if cL and lU:# and playing_field[(cL + lU)] not in figures_for_evaluation:
+                                moves.append( [square, (cL + lU)] )
+                            if cR and lU:# and playing_field[(cR + lU)] not in figures_for_evaluation:
+                                moves.append( [square, (cR + lU)] )
+
+        # removing simple moves that would jump over or step on teammate
         for move in moves:
-            if playing_field[move[1]] in figures_for_evaluation:
-                moves_to_be_removed.append(move)
-        for move in moves_to_be_removed:
-            moves.remove(move)
+            if (player_to_turn==PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) or (player_to_turn==PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
+                temp_line = self.span(move)
+                temp_direction = self.get_move_direction(move)
+                temp_occupied_sq = None
 
+                for square in temp_line:
+                    if (player_to_turn==PlayerColor.BLACK and playing_field[square] in ['b', 'bb']) or (player_to_turn==PlayerColor.WHITE and playing_field[square] in ['w', 'ww']):
+                        temp_occupied_sq = square
+                        break
+                
+                if temp_occupied_sq:
+                    temp_squares_to_delete_for_this_move = [temp_occupied_sq] + self.span([temp_occupied_sq], temp_direction)
+
+                    for sq_to_delete in temp_squares_to_delete_for_this_move:
+                        try:
+                            moves.remove([move[0], sq_to_delete])
+                        except ValueError:
+                            pass # ignoring exceptions caused by trying to delete an item that is not in the list
+
+        # checking for jump moves
+        jumping_moves = []
+        for move in moves:
+            if ((player_to_turn==PlayerColor.WHITE and playing_field[move[1]] in ['b', 'bb'])
+                or (player_to_turn==PlayerColor.BLACK and playing_field[move[1]] in ['w', 'ww'])):
+                
+                jump_move = [move[0], ""]
+                
+                if (player_to_turn==PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) or (player_to_turn==PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
+                    if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0])-1) in letters):
+                        jump_move[1] = jump_move[1] + str(chr(ord(move[1][0])-1))
+                    elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0])+1) in letters):
+                        jump_move[1] = jump_move[1] + str(chr(ord(move[1][0])+1))
+
+                    if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1])-1) <= 8) and ((int(move[1][1])-1) >= 1):
+                        jump_move[1] = jump_move[1] + str(int(move[1][1])+1)
+                    elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1])+1) <= 8) and ((int(move[1][1])+1) >= 1):
+                        jump_move[1] = jump_move[1] + str(int(move[1][1])+1)
+
+                    if len(jump_move[1]) == 2:
+                        jumping_moves.append(jump_move)
+    
+        # eliminating simple moves if any jumping moves are available
+        if jumping_moves:
+            moves = jumping_moves
+
+            # eliminating stone moves if any queen/king moves are available
+            queen_moves = []
+            for move in moves:
+                if playing_field[move[0]] in ['bb', 'ww']:
+                    queen_moves.append(move)
+            if queen_moves:
+                moves = queen_moves
+
+            # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
+            #moves = self.jump_move_simulation(moves, playing_field)
+            moves = jumping_moves # !!! DOES NOT FEATURE FULL FUNCTIONALITY YET
+
+        output = moves
         return output
+
+    def jump_move_simulation(self, moves, game_field):
+        '''
+        Takes moves list on input, presumes all of them are jumping moves.
+        Simulates all possible outcomes of these moves a tests for any compulsory jump moves.
+        Returns list of moves and chained moves, if any.
+        Any chained moves would replace their predecessors - no need to check that after this function ended.
+        '''
+        for move in moves:
+            simulated_game_field = copy.deepcopy(game_field)
+            self.move_execution(move, simulated_game_field)
+
+            #TODO:
+
+
+    def move_execution(self, move, game_field):
+        '''
+        Takes game_field dictionary and move on input.
+        Performs the move and changes game_field accordingly.
+        Returns changed game_field on output.
+        '''
+        for i in range(len(move)-1):
+            # selected "friendly" figure transportation
+            game_field[move[i+1]] = game_field[move[i]]
+            game_field[move[i]] = None
+
+            # "enemy" figure deletion
+            squares_to_destroy = self.find_inbetween_coords(move[i], move[i+1])
+            for sq in squares_to_destroy:
+                game_field[sq] = None
