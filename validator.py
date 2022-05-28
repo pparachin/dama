@@ -64,7 +64,7 @@ class Validator():
     def translate_GUI_board_to_Validator_board(self, gui_board):
         output = {}
         for row in range(len(gui_board)):
-            for column in range(len(row)):
+            for column in gui_board[row]:
                 sq = self.get_sq_string_from_2D_board(row, column)
                 if gui_board[row][column] == "-":
                     output[sq] = None
