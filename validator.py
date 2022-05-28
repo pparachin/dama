@@ -23,6 +23,7 @@ class Validator():
             number = number_list[col]
         return letter + number
 
+
     @staticmethod
     def generate_game_field(game_file_path):
         '''
@@ -49,6 +50,17 @@ class Validator():
             output = None
 
         return playing_field
+
+
+    def translate_GUI_board_to_Validator_board(self, gui_board):
+        output = {}
+        for row in gui_board:
+            for column in row:
+                sq = self.get_sq_string_from_2D_board(row, column)
+                if gui_board[row][column] == "-":
+                    output[sq] = None
+                else:
+                    output[sq] = gui_board[row][column]
 
 
     @staticmethod
