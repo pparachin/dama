@@ -23,6 +23,14 @@ class Validator():
             number = number_list[col]
         return letter + number
 
+    @staticmethod
+    def get_rowcol_from_sq_string(sq_string):
+        output = None
+        column = ord(sq_string[0]) - 97
+        row = sq_string[1] - 1
+        output = (row, column)
+
+        return output
 
     @staticmethod
     def generate_game_field(game_file_path):
