@@ -20,18 +20,35 @@ class Validator():
         number_list = ['8', '7', '6', '5', '4', '3', '2', '1']
         if (row >= 0 and row <= 7) and (col >= 0 and col <= 7):
             letter = chr((97 + col))
-            number = number_list[col]
+            number = number_list[row]
         output = letter + number
+        
         return output
 
     @staticmethod
     def get_rowcol_from_sq_string(sq_string):
         output = None
-        column = ord(sq_string[0]) - 97
-        row = sq_string[1] - 1
+        number_list = [7, 6, 5, 4, 3, 2, 1, 0]
+        column = int(ord(sq_string[0])) - 97
+        row_index = int(sq_string[1]) - 1
+        row = number_list[row_index]
         output = (row, column)
 
         return output
+
+    def game_field_to2D(self, field):
+        board = []
+        for dimension in range(8):
+            board.append(["-", "-", "-", "-", "-", "-", "-", "-",])
+
+        for sq in range(len(field)):
+            row = self.get_rowcol_from_sq_string(list(field.keys())[sq])[0]
+            col = self.get_rowcol_from_sq_string(list(field.keys())[sq])[1]
+            if list(field.values())[sq] != None:
+                board[row][col] = list(field.values())[sq]
+
+        return board
+
 
     @staticmethod
     def generate_game_field(game_file_path):

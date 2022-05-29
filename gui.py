@@ -1,6 +1,7 @@
 import pygame as pg
 from validator import Validator
 from alias import PlayerColor
+from alias import GameDirection
 
 class GUI:
 
@@ -32,9 +33,9 @@ class GUI:
         self._images["homescreen"] = pg.image.load("data/homescreen.png")
       
 
-    def drawGameState(self, screen, selectedSQ, board, finalSQ):
+    def drawGameState(self, screen, selectedSQ, board, validMoves):
         self.drawBoard(screen) #draw squares on the board
-        self.highlightSQ(screen, selectedSQ, board, finalSQ) #highlightes selected square
+        self.highlightSQ(screen, selectedSQ, board, validMoves) #highlightes selected square
         self.drawPieces(screen, self._board) #draw pieces on the top of the squares
         self.drawScore(screen, 0, 0) #draw players score on the right window
 
@@ -107,7 +108,8 @@ class GUI:
         screen.blit(quitGame, (self._WIDTH + 30, 750))
 
 
-    def highlightSQ(self, screen, selectedSQ, board, finalSQ):
+    def highlightSQ(self, screen, selectedSQ, board, validMoves):
+        validator = Validator()
         if selectedSQ != () and selectedSQ[1] < 8:
             r = selectedSQ[0]
             c = selectedSQ[1]
@@ -116,6 +118,11 @@ class GUI:
                 s.set_alpha(100)
                 s.fill(pg.Color("blue"))
                 screen.blit(s, (self._SQ_SIZE * c, self._SQ_SIZE * r))
+
+                s.fill(pg.Color("yellow"))
+                for move in validMoves:
+                    if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
+                        screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[1])[1], self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[1])[0]))
 
 
     def run_game(self):
@@ -140,8 +147,8 @@ class GUI:
                     location = pg.mouse.get_pos() #(x, y) position of mouse clicked
                     col = int(location[0]//self._SQ_SIZE)
                     row = int(location[1]//self._SQ_SIZE)
-                    print(self._board)
                     validMoves = validator.find_all_valid_moves(validator.translate_GUI_board_to_Validator_board(self._board), PlayerColor.WHITE)
+                    
                     # for move in validMoves:
                     #     if move[0] == Validator.get_sq_string_from_2D_board(row, col):
                     #         finalSQ[0] = Validator.get_rowcol_from_sq_string(move[-1])[0]
@@ -156,7 +163,7 @@ class GUI:
                     if len(playerClicks) == 2: #check if it was 2nd click
                         pass
 
-            self.drawGameState(screen, selectedSQ, self._board, finalSQ)
+            self.drawGameState(screen, selectedSQ, self._board, validMoves)
             clock.tick(self._FPS)
             pg.display.flip()
 
