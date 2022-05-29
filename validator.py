@@ -19,7 +19,7 @@ class Validator():
         output = None
         number_list = ['8', '7', '6', '5', '4', '3', '2', '1']
         if (row >= 0 and row <= 7) and (col >= 0 and col <= 7):
-            letter = chr(ord(97 + col))
+            letter = chr((97 + col))
             number = number_list[col]
         output = letter + number
         return output
@@ -62,9 +62,9 @@ class Validator():
 
 
     def translate_GUI_board_to_Validator_board(self, gui_board):
-        output = {}
+        output = self.generate_empty_field()
         for row in range(len(gui_board)):
-            for column in gui_board[row]:
+            for column in range(len(gui_board[row])):
                 sq = self.get_sq_string_from_2D_board(row, column)
                 if gui_board[row][column] == "-":
                     output[sq] = None
@@ -244,6 +244,19 @@ class Validator():
                 output = self.find_inbetween_coords(move[0], (border_letter+border_number))
         
         return output        
+
+
+    @staticmethod
+    def generate_empty_field():
+        output = None
+        playing_field = {}
+        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        for letter in letters:
+            for number in range(1, 9):
+                tag = str(letter) + str(number)
+                playing_field[tag] = None
+        output = playing_field
+        return output
 
 
     @staticmethod
