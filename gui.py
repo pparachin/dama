@@ -19,6 +19,8 @@ class GUI:
         self._SWIDTH = SWIDTH  # width of the score board window
         pg.display.set_caption("CHECKERS by team PINK")  # title of the game
         self._board = board
+        self._clock = pg.time.Clock()
+        self._run = True
 
     def load_images(self):
         self._images["b"] = pg.image.load("data/b.png")  # loads image from the file
@@ -70,7 +72,7 @@ class GUI:
         screen.blit(b_score, (self._WIDTH + 165, 120)) if black_score < 10 else screen.blit(b_score,
                                                                                             (self._WIDTH + 150, 120))
 
-    def menu(self, screen):
+    def menu_init(self, screen):
         red = self._RED
 
         screen.blit(self._images["homescreen"], (0, 0, self._WIDTH, self._HEIGHT))
@@ -90,22 +92,22 @@ class GUI:
         credit = credit_font.render("Created by team PINK", True, red)
         screen.blit(credit, (100, 490))
 
-        player_font = pg.font.Font("data/FROSTBITE.ttf", 30)
+        player_font = pg.font.Font("data/FROSTBITE.ttf", 23)
         one_player = player_font.render("Player vs PC", True, red)
-        screen.blit(one_player, (self._WIDTH + 10, 50))
+        screen.blit(one_player, (self._WIDTH + 33, 50))
         screen.blit(self._images["b"], (self._WIDTH + 50, 100))
         screen.blit(self._images["ww"], (self._WIDTH + 100, 120))
 
-        two_player = player_font.render("Two players", True, red)
-        screen.blit(two_player, (self._WIDTH + 10, 250))
-        screen.blit(self._images["bb"], (self._WIDTH + 50, 300))
-        screen.blit(self._images["ww"], (self._WIDTH + 100, 320))
+        two_players = player_font.render("Player vs Player", True, red)
+        screen.blit(two_players, (self._WIDTH + 8, 230))
+        screen.blit(self._images["bb"], (self._WIDTH + 50, 280))
+        screen.blit(self._images["ww"], (self._WIDTH + 100, 300))
 
         load_game = player_font.render("LOAD GAME", True, red)
-        screen.blit(load_game, (self._WIDTH + 30, 700))
+        screen.blit(load_game, (self._WIDTH + 50, 700))
 
         quitGame = player_font.render("QUIT GAME", True, red)
-        screen.blit(quitGame, (self._WIDTH + 30, 750))
+        screen.blit(quitGame, (self._WIDTH + 50, 750))
 
     def highlight_SQ(self, screen, selectedSQ, board, validMoves):
         validator = Validator()
@@ -124,23 +126,55 @@ class GUI:
                         screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[1])[1],
                                         self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[1])[0]))
 
+    def menu_run(self):
+        menu = True
+        while menu:
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self._run = False
+
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
+
+                    # Check if user click on the button for player vs PC
+                    if self._WIDTH + 30 <= location[0] <= self._WIDTH + 215 and 45 <= location[1] <= 65:
+                        menu = False
+                        break
+
+                    # Check if user click on the button for player vs player
+                    elif self._WIDTH + 7 <= location[0] <= self._WIDTH + 230 and 225 <= location[1] <= 235:
+                        menu = False
+                        break
+
+                    # Check if user click on the for load game (not ready)
+                    elif self._WIDTH + 48 <= location[0] <= self._WIDTH + 195 and 699 <= location[1] <= 709:
+                        pass
+
+                    # Check if user click on the for quit game
+                    elif self._WIDTH + 48 <= location[0] <= self._WIDTH + 195 and 749 <= location[1] <= 759:
+                        menu = False
+                        self._run = False
+
+            self._clock.tick(self._FPS)
+            pg.display.flip()
+
     def run_game(self):
         pg.init()
         validator = Validator()
         screen = pg.display.set_mode((self._WIDTH + self._SWIDTH, self._HEIGHT))
-        clock = pg.time.Clock()
         self.load_images()
-        self.menu(screen)
+        self.menu_init(screen)
         selectedSQ = ()  # last clicked square (row, col)
         finalSQ = ()
         valid_moves = []
         player_clicks = []  # most recent 2 clicks of the player
-        run = True
 
-        while run:
+        self.menu_run()
+
+        while self._run:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    run = False
+                    self._run = False
 
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
@@ -164,7 +198,7 @@ class GUI:
                         pass
 
             self.draw_game_state(screen, selectedSQ, self._board, valid_moves)
-            clock.tick(self._FPS)
+            self._clock.tick(self._FPS)
             pg.display.flip()
 
         pg.quit()
