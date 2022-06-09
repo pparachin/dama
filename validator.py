@@ -243,23 +243,25 @@ class Validator():
                     border_letter = chr(ord(border_letter) + 1)
                     border_number = str(int(border_number) + 1)
                 output = self.find_inbetween_coords(move[0], (border_letter + border_number))
+                return output
             case 'nw':
                 while ord(border_letter) >= ord('a') and int(border_number) <= 8:
                     border_letter = chr(ord(border_letter) - 1)
                     border_number = str(int(border_number) + 1)
                 output = self.find_inbetween_coords(move[0], (border_letter + border_number))
+                return output
             case 'se':
                 while ord(border_letter) <= ord('h') and int(border_number) >= 1:
                     border_letter = chr(ord(border_letter) + 1)
                     border_number = str(int(border_number) - 1)
                 output = self.find_inbetween_coords(move[0], (border_letter + border_number))
+                return output
             case 'sw':
                 while ord(border_letter) >= ord('a') and int(border_number) >= 1:
                     border_letter = chr(ord(border_letter) - 1)
                     border_number = str(int(border_number) - 1)
                 output = self.find_inbetween_coords(move[0], (border_letter + border_number))
-
-        return output
+                return output
 
     @staticmethod
     def generate_empty_field():
@@ -351,6 +353,7 @@ class Validator():
             figures_for_evaluation = ["w", "ww"]
 
         # getting all moves for current player, even impossible ones
+
         for square in playing_field:
             for figure in figures_for_evaluation:
                 if playing_field[square] == figure:
@@ -395,28 +398,36 @@ class Validator():
                                 moves.append([square, (cR + lU)])
 
         # removing simple moves that would jump over or step on teammate
+
+        moves_to_delete = []
+
         for move in moves:
-            if (player_to_turn == PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) or (
-                    player_to_turn == PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
+            if (player_to_turn == PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) \
+                    or (player_to_turn == PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
                 temp_line = self.span(move)
                 temp_direction = self.get_move_direction(move)
-                temp_occupied_sq = None
+                temp_occupied_sq_list = []
 
                 for square in temp_line:
                     if (player_to_turn == PlayerColor.BLACK and playing_field[square] in ['b', 'bb']) or (
                             player_to_turn == PlayerColor.WHITE and playing_field[square] in ['w', 'ww']):
-                        temp_occupied_sq = square
-                        break
+                        temp_occupied_sq_list.append(square)
 
-                if temp_occupied_sq:
-                    temp_squares_to_delete_for_this_move = [temp_occupied_sq] + self.span([temp_occupied_sq],
-                                                                                          temp_direction)
+                for temp_occupied_sq in temp_occupied_sq_list:
+                    temp_squares_to_delete_for_this_move = [temp_occupied_sq]
+                    for sq in self.span([temp_occupied_sq], temp_direction):
+                        temp_squares_to_delete_for_this_move.append(sq)
+
+                    temp_squares_to_delete_for_this_move.append(temp_occupied_sq)
 
                     for sq_to_delete in temp_squares_to_delete_for_this_move:
-                        try:
-                            moves.remove([move[0], sq_to_delete])
-                        except ValueError:
-                            pass  # ignoring exceptions caused by trying to delete an item that is not in the list
+                        moves_to_delete.append([move[0], sq_to_delete])
+
+        for move in moves_to_delete:
+            try:
+                moves.remove(move)
+            except ValueError:
+                pass  # ignoring exceptions caused by trying to delete an item that is not in the lis
 
         # checking for jump moves
         jumping_moves = []
