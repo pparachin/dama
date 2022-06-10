@@ -15,6 +15,8 @@ class Figure:
     def show(self):
         print(f"{self._position} {self._color} {self._status} {self._label}")
 
-    @property
     def position(self):
         return self._position
+
+    def label(self):
+        return self._label

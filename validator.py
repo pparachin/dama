@@ -5,6 +5,8 @@ import copy
 from alias import PlayerColor
 from alias import GameDirection
 from move_tree import *
+from stone import Stone
+from alias import PlayerColor, PlayerType, StoneColor
 
 
 class Validator():
@@ -47,31 +49,6 @@ class Validator():
 
         return board
 
-    @staticmethod
-    def generate_game_field(game_file_path):
-        """
-        This function opens .csv file and outputs corresponding "game field dictionary".
-        !!! Note: This function function does NOT validate if the text inside file is correct. !!!
-        """
-        playing_field = {}
-        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-        for letter in letters:
-            for number in range(1, 9):
-                tag = str(letter) + str(number)
-                playing_field[tag] = None
-
-        # putting figures in
-        try:
-            with open(game_file_path) as game_file:
-                game_file_contents = game_file.read().splitlines()
-                for line in game_file_contents:
-                    playing_field[line[0:2]] = line[3:]
-                game_file.close()
-                output = []
-        except FileNotFoundError:
-            output = None
-
-        return playing_field
 
     def translate_GUI_board_to_Validator_board(self, gui_board):
         output = self.generate_empty_field()

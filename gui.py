@@ -52,12 +52,14 @@ class GUI:
                              (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
 
     def draw_pieces(self, screen, board):
-        for row in range(self._DIMENSION):
-            for col in range(self._DIMENSION):
-                piece = board[row][col]
-                if piece != "-":
-                    screen.blit(self._images[piece+"_transformed"],
-                                (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
+        blacks = []
+        whites = []
+        for row in board:
+            if row[1].label() == "b":
+                blacks.append(row[1].label())
+            else:
+                whites.append(row[1].label())
+
 
     def draw_score(self, screen, white_score, black_score):
         screen.blit(self._images["wood"], (self._WIDTH, 0, self._SWIDTH, self._HEIGHT))
@@ -154,7 +156,7 @@ class GUI:
             self._clock.tick(self._FPS)
             pg.display.flip()
 
-    def run_game(self, validator, game, status, players):
+    def run_game(self, validator, status, players, game_field):
         selectedSQ = ()  # last clicked square (row, col)
         finalSQ = ()
         valid_moves = []
@@ -190,7 +192,7 @@ class GUI:
                     if len(player_clicks) == 2:  # check if it was 2nd click
                         pass
 
-            self.draw_game_state(self._screen, validator, selectedSQ, self._board, valid_moves, players)
+            self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players)
             self._clock.tick(self._FPS)
             pg.display.flip()
 
