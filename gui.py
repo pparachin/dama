@@ -121,8 +121,8 @@ class GUI:
                 s.fill(pg.Color("yellow"))
                 for move in valid_moves:
                     if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
-                        screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[1])[1],
-                                        self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[1])[0]))
+                        screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[-1],
+                                        self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[0]))
 
     def menu_run(self, status):
         while status:
