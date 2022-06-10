@@ -62,12 +62,19 @@ class GUI:
 
 
     def draw_score(self, screen, white_score, black_score):
-        screen.blit(self._images["wood"], (self._WIDTH, 0, self._SWIDTH, self._HEIGHT))
+        screen.blit(self._images["wood"], (self._WIDTH - 5, 1, self._SWIDTH, self._HEIGHT))
         screen.blit(self._images["ww_transformed"], (self._WIDTH + 10, 0))
         screen.blit(self._images["bb_transformed"], (self._WIDTH + 140, 0))
         player_font = pg.font.Font("data/FROSTBITE.ttf", 30)
+
         quit_game = player_font.render("QUIT GAME", True, self._RED)
         screen.blit(quit_game, (self._WIDTH + 40, 750))
+
+        return_to_menu = player_font.render("MENU", True, self._RED)
+        screen.blit(return_to_menu, (self._WIDTH + 70, 700))
+
+        save_game = player_font.render("SAVE GAME", True, self._RED)
+        screen.blit(save_game, (self._WIDTH + 40, 650))
 
         score_font = pg.font.Font("data/FROSTBITE.ttf", 70)
         w_score = score_font.render("{%d}" % int(white_score), True, self._WHITE)
@@ -126,6 +133,52 @@ class GUI:
                         screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[-1],
                                         self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[0]))
 
+    def win(self, screen, winner):
+        win = True
+        screen.blit(self._images["home_screen"], (0, 1, self._WIDTH, self._HEIGHT))
+        winner_font = pg.font.Font("data/FROSTBITE.ttf", 120)
+
+        if winner == PlayerColor.BLACK:
+            screen.blit(self._images["b"], (200, 265))
+            screen.blit(self._images["bb"], (330, 300))
+            black_winner = winner_font.render("BLACK WINS", True, self._RED)
+            screen.blit(black_winner, (15, 170))
+
+        elif winner == PlayerColor.WHITE:
+            screen.blit(self._images["w"], (200, 265))
+            screen.blit(self._images["ww"], (330, 300))
+            white_winner = winner_font.render("WHITE WINS", True, self._RED)
+            screen.blit(white_winner, (15, 170))
+        
+        else:
+            screen.blit(self._images["bb"], (200, 265))
+            screen.blit(self._images["ww"], (330, 300))
+            draw = winner_font.render("IT'S A DRAW", True, self._RED)
+            screen.blit(draw, (15, 170))
+        
+        while win:
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    win = False
+
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
+
+                    # Check if user click on the button for quit game
+                    if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
+                        win = False
+
+                    # Check if user click on the button for save game
+                    if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
+                        pass
+
+                    # Check if user click on the button for return to menu
+                    if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+                        pass
+                    
+            pg.display.flip()
+
+
     def menu_run(self, status):
         while status:
             for event in pg.event.get():
@@ -141,7 +194,7 @@ class GUI:
                         return 0
 
                     # Check if user click on the button for player vs player
-                    elif self._WIDTH + 7 <= location[0] <= self._WIDTH + 230 and 225 <= location[1] <= 235:
+                    elif self._WIDTH + 7 <= location[0] <= self._WIDTH + 230 and 225 <= location[1] <= 245:
                         # menu = False
                         return 1
 
@@ -178,10 +231,14 @@ class GUI:
                     if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
                         status = False
 
-                    # for move in valid_moves:
-                    #     if move[0] == Validator.get_sq_string_from_2D_board(row, col):
-                    #         finalSQ[0] = Validator.get_rowcol_from_sq_string(move[-1])[0]
-                    #         finalSQ[1] = Validator.get_rowcol_from_sq_string(move[-1])[1]
+                    # Check if user click on the button for save game
+                    if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
+                        self.win(self._screen, PlayerColor.WHITE) # Zatím jen pro test win screenu
+                        
+                    
+                    # Check if user click on the button for return to menu
+                    if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+                        pass
 
                     if selectedSQ == (row, col):  # selected square is the same as previous one
                         selectedSQ = ()  # deselect

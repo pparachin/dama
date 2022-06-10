@@ -29,7 +29,7 @@ class Game:
             self._players.append(Player(PlayerColor.BLACK, PlayerType.PC, 0))
             self.status = True
             gui.run_game(validator, self.status, self._players, self.game_field)
-        elif type == 1:
+        elif typ == 1:
             self._type_of_game = typ
             self._players.append(Player(PlayerColor.WHITE, PlayerType.PLAYER, 0))
             self._players.append(Player(PlayerColor.BLACK, PlayerType.PLAYER, 0))
