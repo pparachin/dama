@@ -2,11 +2,12 @@
 import copy
 
 # our modules
-from alias import PlayerColor
-from alias import GameDirection
+from alias import *
 from move_tree import *
+from game import Game
+from figure import Figure
 from stone import Stone
-from alias import PlayerColor, PlayerType, StoneColor
+from lady import Lady
 
 
 class Validator():
@@ -279,6 +280,16 @@ class Validator():
         return output
 
     @staticmethod
+    def generate_list_of_square_names():
+        output = []
+        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        for letter in letters:
+            for number in range(1, 9):
+                tag = str(letter) + str(number)
+                output.append(tag)
+        return output
+
+    @staticmethod
     def find_inbetween_coords(start, end):
         """
         Returns list of inbetween coordinates.
@@ -331,7 +342,7 @@ class Validator():
                 output.append((letter + str((int(position[1]) + diameter))))
         return output
 
-    def find_all_valid_moves(self, playing_field, player_to_turn, game_direction=GameDirection.WHITE_IS_DOWN):
+    def find_all_valid_moves(self, game=Game()):
         """
         Generates all possible moves for each figure but returns only valid moves.
         Output depends on which player is to turn.
@@ -342,24 +353,26 @@ class Validator():
         None            - game file error or other error
         """
         letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-        assert player_to_turn in [PlayerColor.BLACK, PlayerColor.WHITE]  # 0=BLACK, 1=WHITE
-        assert game_direction in [GameDirection.WHITE_IS_DOWN,
-                                  GameDirection.WHITE_IS_UP]  # 0=white goes down, 1=black goes down
+        all_square_names = self.generate_list_of_square_names()
 
         # GENERATING ALL MOVES
         moves = []  # contains lists [from, inbetween1, inbetween2, ... , to]
 
         # which figures to evaluate
-        if player_to_turn == PlayerColor.BLACK:
+        if game.get == PlayerColor.BLACK:
             figures_for_evaluation = ["b", "bb"]
         else:
             figures_for_evaluation = ["w", "ww"]
 
         # getting all moves for current player, even impossible ones
+        for square in all_square_names:
 
-        for square in playing_field:
+            rowcol = self.get_rowcol_from_sq_string(square)
+            r = rowcol[0]
+            c = rowcol[1]
+
             for figure in figures_for_evaluation:
-                if playing_field[square] == figure:
+                if game.game_field[r][c].label() == figure:
 
                     # different figure abilities
                     if len(figure) == 1:
@@ -384,36 +397,45 @@ class Validator():
                             lU = str(lU)
 
                         # appending moves considering game direction (which player started up)
-                        if (game_direction == GameDirection.WHITE_IS_UP and player_to_turn == PlayerColor.WHITE) or (
-                                game_direction == GameDirection.WHITE_IS_DOWN and player_to_turn == PlayerColor.BLACK) or (
-                                len(figure) > 1):
+                        if game.get_player_to_turn == PlayerColor.BLACK or (len(figure) > 1):
                             if cL and lD:  # and playing_field[(cL + lD)] not in figures_for_evaluation:
                                 moves.append([square, (cL + lD)])
                             if cR and lD:  # and playing_field[(cR + lD)] not in figures_for_evaluation:
                                 moves.append([square, (cR + lD)])
 
-                        if (game_direction == GameDirection.WHITE_IS_UP and player_to_turn == PlayerColor.BLACK) or (
-                                game_direction == GameDirection.WHITE_IS_DOWN and player_to_turn == PlayerColor.WHITE) or (
-                                len(figure) > 1):
+                        if game.get_player_to_turn == PlayerColor.WHITE or (len(figure) > 1):
                             if cL and lU:  # and playing_field[(cL + lU)] not in figures_for_evaluation:
                                 moves.append([square, (cL + lU)])
                             if cR and lU:  # and playing_field[(cR + lU)] not in figures_for_evaluation:
                                 moves.append([square, (cR + lU)])
 
         # removing simple moves that would jump over or step on teammate
-
         moves_to_delete = []
 
         for move in moves:
-            if (player_to_turn == PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) \
-                    or (player_to_turn == PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
+
+            rowcol0 = self.get_rowcol_from_sq_string(move[0])
+            r0 = rowcol0[0]
+            c0 = rowcol0[1]
+
+            rowcol1 = self.get_rowcol_from_sq_string(move[1])
+            r1 = rowcol1[0]
+            c1 = rowcol1[1]
+
+            if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].label() in ['b', 'bb']) \
+                    or (game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].label() in ['w', 'ww']):
                 temp_line = self.span(move)
                 temp_direction = self.get_move_direction(move)
                 temp_occupied_sq_list = []
 
                 for square in temp_line:
-                    if (player_to_turn == PlayerColor.BLACK and playing_field[square] in ['b', 'bb']) or (
-                            player_to_turn == PlayerColor.WHITE and playing_field[square] in ['w', 'ww']):
+
+                    tmpln_rowcol = self.get_rowcol_from_sq_string(square)
+                    r_sq = tmpln_rowcol[0]
+                    c_sq = tmpln_rowcol[1]
+
+                    if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r_sq][c_sq].label() in ['b', 'bb']) or (
+                            game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r_sq][c_sq].label() in ['w', 'ww']):
                         temp_occupied_sq_list.append(square)
 
                 for temp_occupied_sq in temp_occupied_sq_list:

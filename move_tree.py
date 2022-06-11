@@ -19,7 +19,7 @@ class Move():
     def __init__(self, start, end, input_figure, input_board=None):
         self.data = [start, end]
         self.children = []
-        self.board_state = input_board
+        self.board_state = input_board # This attrib is here only for simulating trees further (AI, jump_moves)
         self.figure = input_figure
         self.parent = None
         self.friends = None
