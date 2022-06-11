@@ -5,30 +5,29 @@ from alias import GameDirection
 from validator import Validator
 from stone import Stone
 from lady import Lady
+from move_tree import MovesTree
+from move_tree import Move
 
 
 class Game:
 
     def __init__(self, type_of_game, status, is_new_game=True):
         self._is_new_game = is_new_game
-        self._figures = []
         self._type_of_game = type_of_game
         self.status = status
         self.validator = Validator()
         self.game_field = self.generate_game_field_2("data/moves.csv")
-        self._players = []
+        self.players = []
+        self._figures = []
         self.game(self.status, self.validator)
-        self._player_to_turn = None
+        self.player_to_turn = None
 
     def get_player_to_turn(self):
-        return self._player_to_turn
+        return self.player_to_turn
 
-    def next_turn(self):
-        if self._player_to_turn is PlayerColor.WHITE: self._player_to_turn = PlayerColor.BLACK
-        elif self._player_to_turn is PlayerColor.BLACK: self._player_to_turn = PlayerColor.WHITE
-
-    def add_figure(self, figure):
-        self._figures.append(figure)
+    def next_turn(self, players):
+        if self.player_to_turn is PlayerColor.WHITE: self.player_to_turn = PlayerColor.BLACK
+        elif self.player_to_turn is PlayerColor.BLACK: self.player_to_turn = PlayerColor.WHITE
 
     def game(self, status, validator):
         gui = GUI(WIDTH=800, HEIGHT=800, DIMENSION=8, SQ_SIZE=100, images={}, FPS=30, WHITE=(255, 255, 255),
@@ -39,49 +38,19 @@ class Game:
 
         if typ == 0:
             self._type_of_game = typ
-            self._players.append(Player(PlayerColor.WHITE, PlayerType.PLAYER, 0))
-            self._players.append(Player(PlayerColor.BLACK, PlayerType.PC, 0))
+            self.players.append(Player(PlayerColor.WHITE, PlayerType.PLAYER, 0))
+            self.players.append(Player(PlayerColor.BLACK, PlayerType.PC, 0))
             self.status = True
-            gui.run_game(validator, self.status, self._players, self.game_field)
+            self.player_to_turn = self.players[0].get_color()
+            print(self.player_to_turn)
+            gui.run_game(validator, self.status, self.players, self.game_field, self, self.player_to_turn)
         elif typ == 1:
             self._type_of_game = typ
-            self._players.append(Player(PlayerColor.WHITE, PlayerType.PLAYER, 0))
-            self._players.append(Player(PlayerColor.BLACK, PlayerType.PLAYER, 0))
+            self.players.append(Player(PlayerColor.WHITE, PlayerType.PLAYER, 0))
+            self.players.append(Player(PlayerColor.BLACK, PlayerType.PLAYER, 0))
             self.status = True
-            gui.run_game(validator, self.status, self._players, self.game_field)
-
-    @staticmethod
-    def generate_game_field(game_file_path):
-        """
-        This function opens .csv file and outputs corresponding "game field dictionary".
-        !!! Note: This function function does NOT validate if the text inside file is correct. !!!
-        """
-        temp_playing_field = []
-        playing_field = []
-        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-        for letter in letters:
-            for number in range(1, 9):
-                tag = str(letter) + str(number)
-                figure = None
-                temp_playing_field.append([tag, figure])
-
-        # putting figures in
-        try:
-            with open(game_file_path) as game_file:
-                game_file_contents = game_file.read().splitlines()
-                for line in game_file_contents:
-                    line = line.split(',')
-                    for point in temp_playing_field:
-                        if line[0] == point[0]:
-                            if line[1] == "w":
-                                playing_field.append([line[0], Stone(line[0], StoneColor.WHITE, 1, "w", 0)])
-                            else:
-                                playing_field.append([line[0], Stone(line[0], StoneColor.BLACK, 1, "b", 0)])
-                game_file.close()
-        except FileNotFoundError:
-            print("File does not exist!")
-
-        return playing_field
+            self.player_to_turn = self.players[0].get_color()
+            gui.run_game(validator, self.status, self.players, self.game_field, self, self.player_to_turn)
 
     def generate_game_field_2(self, game_file_path):
         if self._is_new_game:
@@ -106,8 +75,7 @@ class Game:
             color = StoneColor.WHITE if temp_dict_field[key] in ['w', 'ww'] else StoneColor.BLACK
             status = 1
             label = temp_dict_field[key]
-            temp_figure = Lady(position, color, status, label, 1) if is_lady else Stone(position, color, status, label, 0)
-            self.add_figure(temp_figure)
+            temp_figure = Lady(position, color, status, label) if is_lady else Stone(position, color, status, label)
             rowcol = self.validator.get_rowcol_from_sq_string(key)
             row, col = rowcol[0], rowcol[1]
             temp_2D_field[row][col] = temp_figure
@@ -115,7 +83,7 @@ class Game:
         return temp_2D_field
 
     def get_players(self):
-        return self._players
+        return self.players
 
     def get_status(self):
         return self.status
@@ -127,3 +95,12 @@ class Game:
                 for c in range(8):
                     if field[r][c] is figure:
                         figure.set_position(self.validator.get_sq_string_from_2D_board(r, c))
+
+    def get_game_field(self):
+        return self.game_field
+
+    def check_win(self, player_to_turn):
+        if not self.validator.find_all_valid_moves(self, player_to_turn):
+            return True
+        else:
+            return False

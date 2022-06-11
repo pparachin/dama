@@ -186,7 +186,6 @@ class GUI:
         player_font = pg.font.Font(path_to_font, 23)
         menu_font = pg.font.Font(path_to_font, 30)
 
-        
         while status:
             location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
             for event in pg.event.get():
@@ -234,13 +233,17 @@ class GUI:
             self._clock.tick(self._FPS)
             pg.display.flip()
 
-    def run_game(self, validator, status, players, game_field):
+    def run_game(self, validator, status, players, game_field, game, player_to_turn):
         selectedSQ = ()  # last clicked square (row, col)
         finalSQ = ()
         valid_moves = []
         player_clicks = []  # most recent 2 clicks of the player
 
         while status:
+
+            if game.check_win(player_to_turn):
+                self.win(self._screen, player_to_turn, players)
+
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     status = False
