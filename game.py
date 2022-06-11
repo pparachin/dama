@@ -75,7 +75,7 @@ class Game:
         return playing_field
 
     def generate_game_field_2(self, game_file_path):
-        temp_dict_field = self.generate_game_field(game_file_path)
+        temp_dict_field = self.validator.generate_game_field(game_file_path)
         temp_2D_field = self.validator.game_field_to2D(temp_dict_field)
 
         for key in temp_dict_field.keys():
