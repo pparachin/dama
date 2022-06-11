@@ -585,16 +585,17 @@ class Validator():
 
         # considering all cases for kings and queens
         elif move.get_figure().get_label() in ['ww', 'bb']:
-            close_vicinity = []
-            temp_circle = self.get_circle(simulated_game_field, diameter=1)
-            previous_sq = None
-            for direction in temp_circle:
-                previous_sq = direction
-                for item in self.span([root_move.data[0], direction]):
-                    if (simulated_game_field[previous_sq] in root_move.enemies and
-                            simulated_game_field[item] is None):
-                        root_move.force_birth(further_sq)
-                    previous_sq = item
+            enemies = ['w', 'ww'] if move.get_figure().get_label() == 'b' else ['b', 'bb']
+            # close_vicinity = []
+            # temp_circle = self.get_circle(simulated_game_field, diameter=1)
+            # previous_sq = None
+            # for direction in temp_circle:
+            #     previous_sq = direction
+            #     for item in self.span([root_move.data[0], direction]):
+            #         if (simulated_game_field[previous_sq] in root_move.enemies and
+            #                 simulated_game_field[item] is None):
+            #             root_move.force_birth(further_sq)
+            #         previous_sq = item
 
         # after first set of childern has been generated the algorithm can repeat itself recursively
         for child in root_move.children:
