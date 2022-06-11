@@ -55,14 +55,12 @@ class GUI:
                              (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
 
     def draw_pieces(self, screen, board):
-        blacks = []
-        whites = []
-        for row in board:
-            if isinstance(row[1], Stone) or isinstance(row[1], Lady):
-                if row[1].label() == "b":
-                    blacks.append(row[1].label())
-                else:
-                    whites.append(row[1].label())
+        for row in range(self._DIMENSION):
+            for col in range(self._DIMENSION):
+                piece = board[row][col]
+                if piece != "-":
+                    screen.blit(self._images[piece.get_label() + "_transformed"],
+                                (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
 
 
     def draw_score(self, screen, white_score, black_score):
@@ -182,7 +180,6 @@ class GUI:
                     
             pg.display.flip()
 
-
     def menu_run(self, status):
         while status:
             for event in pg.event.get():
@@ -238,8 +235,7 @@ class GUI:
                     # Check if user click on the button for save game
                     if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
                         self.win(self._screen, PlayerColor.WHITE) # Zatím jen pro test win screenu
-                        
-                    
+
                     # Check if user click on the button for return to menu
                     if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
                         pass
