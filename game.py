@@ -84,7 +84,7 @@ class Game:
         return playing_field
 
     def generate_game_field_2(self, game_file_path):
-        if self._is_new_game: 
+        if self._is_new_game:
             if self.validator.validate_base_setup(game_file_path) != 0:
                 return None
             else:
@@ -107,7 +107,6 @@ class Game:
             status = 1
             label = temp_dict_field[key]
             temp_figure = Lady(position, color, status, label, 1) if is_lady else Stone(position, color, status, label, 0)
-            temp_figure.set_game(self)
             self.add_figure(temp_figure)
             rowcol = self.validator.get_rowcol_from_sq_string(key)
             row, col = rowcol[0], rowcol[1]
