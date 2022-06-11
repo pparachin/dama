@@ -442,37 +442,33 @@ class Validator():
             r1 = rowcol1[0]
             c1 = rowcol1[1]
 
-            if ((game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r1][c1].get_label() in ['b', 'bb'])
-                    or (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r1][c1].get_label() in ['w',
-                                                                                                                 'ww'])):
+            # if there is enemy figure in vicinity
+            if not isinstance(game.game_field[r0][c0], str):
+                if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].get_label() in ['b',
+                                                                                                                'bb']) or (
+                        game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].get_label() in [
+                    'w', 'ww']):
 
-                jump_move = [move[0], ""]
+                    jump_move = [move[0], ""]
 
-                # if there is enemy figure in vicinity
-                if not isinstance(game.game_field[r0][c0], str):
-                    if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].get_label() in ['b',
-                                                                                                                 'bb']) or (
-                            game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].get_label() in [
-                        'w', 'ww']):
+                    if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
+                        jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
+                    elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
+                        jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
 
-                        if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
-                            jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
-                        elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
-                            jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
+                    if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
+                            (int(move[1][1]) - 1) >= 1) and (
+                            game.get_player_to_turn == PlayerColor.BLACK or game.game_field[r0][c0].get_label() in [
+                        'bb', 'ww']):
+                        jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
+                    elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
+                            (int(move[1][1]) + 1) >= 1) and (
+                            game.get_player_to_turn == PlayerColor.WHITE or game.game_field[r0][c0].get_label() in [
+                        'bb', 'ww']):
+                        jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
 
-                        if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
-                                (int(move[1][1]) - 1) >= 1) and (
-                                game.get_player_to_turn == PlayerColor.BLACK or game.game_field[r0][c0].get_label() in [
-                            'bb', 'ww']):
-                            jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
-                        elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
-                                (int(move[1][1]) + 1) >= 1) and (
-                                game.get_player_to_turn == PlayerColor.WHITE or game.game_field[r0][c0].get_label() in [
-                            'bb', 'ww']):
-                            jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
-
-                        if len(jump_move[1]) == 2:
-                            jumping_moves.append(jump_move)
+                    if len(jump_move[1]) == 2:
+                        jumping_moves.append(jump_move)
 
         # eliminating simple moves if any jumping moves are available
         if jumping_moves:
