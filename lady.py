@@ -1,6 +1,6 @@
-import figure
+from figure import Figure
 
 
-class Lady(figure):
+class Lady(Figure):
     def __init__(self, position, color, status, label, advantage):
         super().__init__(position, color, status, label, advantage)

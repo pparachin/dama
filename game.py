@@ -13,10 +13,10 @@ class Game:
         self._figures = []
         self._type_of_game = type_of_game
         self.status = status
-        validator = Validator()
+        self._validator = Validator()
         self.game_field = self.generate_game_field_2("data/moves.csv")
         self._players = []
-        self.game(self.status, validator)
+        self.game(self.status, self._validator)
 
     def add_figure(self, figure):
         self._figures.append(figure)
@@ -75,8 +75,8 @@ class Game:
         return playing_field
 
     def generate_game_field_2(self, game_file_path):
-        temp_dict_field = self.validator.generate_game_field(game_file_path)
-        temp_2D_field = self.validator.game_field_to2D(temp_dict_field)
+        temp_dict_field = self._validator.generate_game_field(game_file_path)
+        temp_2D_field = self._validator.game_field_to2D(temp_dict_field)
 
         for key in temp_dict_field.keys():
             # skip empty squares
@@ -94,7 +94,7 @@ class Game:
             advantage = None
             temp_figure = Lady(position, color, status, label, advantage) if is_lady else Stone(position, color, status, label, advantage)
             self.add_figure(temp_figure)
-            temp_dict_field[self.validator.get_rowcol_from_sq_string(key)] = temp_figure
+            temp_dict_field[self._validator.get_rowcol_from_sq_string(key)] = temp_figure
 
             return temp_dict_field
 
