@@ -4,8 +4,6 @@ import copy
 # our modules
 from alias import *
 from move_tree import *
-from game import Game
-from figure import Figure
 from stone import Stone
 from lady import Lady
 

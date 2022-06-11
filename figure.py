@@ -1,6 +1,4 @@
 from move_tree import MovesTree
-from validator import Validator
-from game import Game
 from alias import *
 
 
@@ -17,7 +15,7 @@ class Figure:
         self._status = status
         self._label = label
         self._advantage = advantage
-        self._game = Game() # NUTNO PREPSAT NA NONE, JEN PRO DEBUGGING JE TU Game()
+        self._game = None # NUTNO PREPSAT NA NONE, JEN PRO DEBUGGING JE TU Game()
         self.moves_tree = MovesTree()
 
     def show(self):
