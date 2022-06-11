@@ -491,10 +491,15 @@ class Validator():
             temp_move = Move(move, game.game_field[r][c])
             obj_moves.append(temp_move)
 
+        control_output = moves
+
         # adding move objects to move trees of figures
         for obj_move in obj_moves:
             obj_figure = obj_move.get_figure
             obj_figure.moves_tree.add_move(obj_move)
+
+        # control output
+        return control_output
             
     def jump_move_simulation(self, moves, game):
         """
