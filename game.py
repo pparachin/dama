@@ -79,6 +79,8 @@ class Game:
         if self._is_new_game: 
             if self._validator.validate_base_setup(game_file_path) != 0:
                 return None
+            else:
+                self._is_new_game = False
 
         temp_dict_field = self._validator.old_generate_game_field(game_file_path)
         temp_2D_field = self._validator.game_field_to2D(temp_dict_field)
@@ -96,12 +98,13 @@ class Game:
             color = StoneColor.WHITE if temp_dict_field[key] in ['w', 'ww'] else StoneColor.BLACK
             status = 1
             label = temp_dict_field[key]
-            advantage = 0
-            temp_figure = Lady(position, color, status, label, advantage) if is_lady else Stone(position, color, status, label, advantage)
+            temp_figure = Lady(position, color, status, label, 1) if is_lady else Stone(position, color, status, label, 0)
             self.add_figure(temp_figure)
-            temp_dict_field[self._validator.get_rowcol_from_sq_string(key)] = temp_figure
+            rowcol = self._validator.get_rowcol_from_sq_string(key)
+            row, col = rowcol[0], rowcol[1]
+            temp_2D_field[row][col] = temp_figure
 
-            return temp_dict_field
+        return temp_2D_field
 
     def get_players(self):
         return self._players

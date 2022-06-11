@@ -1,4 +1,7 @@
 import pygame as pg
+from figure import Figure
+from lady import Lady
+from stone import Stone
 from validator import Validator
 from alias import PlayerColor
 from alias import GameDirection
@@ -55,10 +58,11 @@ class GUI:
         blacks = []
         whites = []
         for row in board:
-            if row[1].label() == "b":
-                blacks.append(row[1].label())
-            else:
-                whites.append(row[1].label())
+            if isinstance(row[1], Stone) or isinstance(row[1], Lady):
+                if row[1].label() == "b":
+                    blacks.append(row[1].label())
+                else:
+                    whites.append(row[1].label())
 
 
     def draw_score(self, screen, white_score, black_score):
