@@ -46,6 +46,7 @@ class GUI:
         self.highlight_SQ(screen, validator, selectedSQ, board, valid_moves)  # highlights selected square
         self.draw_pieces(screen, self._board)  # draw pieces on the top of the squares
         self.draw_score(screen, players[0].get_score(), players[1].get_score())  # draw players score on the right window
+        self.draw_notation(screen) # draw basic notation of the board
 
     def draw_board(self, screen):
         screen.fill(self._BLACK)
@@ -62,7 +63,20 @@ class GUI:
                     screen.blit(self._images[piece.get_label() + "_transformed"],
                                 (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
 
+    def draw_notation(self, screen):
+        letter_font = pg.font.Font("data/FROSTBITE.ttf", 20)
+        number_font = pg.font.Font("data/FROSTBITE.ttf", 25)
+        x, y = 5, 705
+        for col in range(self._DIMENSION):
+            notation = letter_font.render(chr(65+col), True, self._RED)
+            screen.blit(notation, (x, 780))
+            x += self._SQ_SIZE
 
+        for row in range(self._DIMENSION):
+            notation = number_font.render(str(row + 1), True, self._RED)
+            screen.blit(notation, (5, y))
+            y -= self._SQ_SIZE
+            
     def draw_score(self, screen, white_score, black_score):
         location = pg.mouse.get_pos()
         screen.blit(self._images["wood"], (self._WIDTH - 5, 1, self._SWIDTH, self._HEIGHT))
