@@ -340,7 +340,7 @@ class Validator():
                 output.append((letter + str((int(position[1]) + diameter))))
         return output
 
-    def find_all_valid_moves(self, game=Game()):
+    def find_all_valid_moves(self, game):
         """
         Generates all possible moves for each figure but returns only valid moves.
         Output depends on which player is to turn.
@@ -352,7 +352,6 @@ class Validator():
         """
         letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         all_square_names = self.generate_list_of_square_names()
-        output = None
 
         # GENERATING ALL MOVES
         moves = []  # contains lists [from, inbetween1, inbetween2, ... , to]
@@ -371,7 +370,7 @@ class Validator():
             c = rowcol[1]
 
             for figure in figures_for_evaluation:
-                if game.game_field[r][c].label() == figure:
+                if not isinstance(game.game_field[r][c], str):
 
                     # different figure abilities
                     if len(figure) == 1:
@@ -417,12 +416,8 @@ class Validator():
             r0 = rowcol0[0]
             c0 = rowcol0[1]
 
-            rowcol1 = self.get_rowcol_from_sq_string(move[1])
-            r1 = rowcol1[0]
-            c1 = rowcol1[1]
-
-            if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].label() in ['b', 'bb']) \
-                    or (game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].label() in ['w', 'ww']):
+            if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].get_label() in ['b', 'bb']) \
+                    or (game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].get_label() in ['w', 'ww']):
                 temp_line = self.span(move)
                 temp_direction = self.get_move_direction(move)
                 temp_occupied_sq_list = []
@@ -433,9 +428,10 @@ class Validator():
                     r_sq = tmpln_rowcol[0]
                     c_sq = tmpln_rowcol[1]
 
-                    if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r_sq][c_sq].label() in ['b', 'bb']) or (
-                            game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r_sq][c_sq].label() in ['w', 'ww']):
-                        temp_occupied_sq_list.append(square)
+                    if not isinstance(game.game_field[r_sq][c_sq], str):
+                        if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r_sq][c_sq].get_label() in ['b', 'bb']) or (
+                                game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r_sq][c_sq].get_label() in ['w', 'ww']):
+                            temp_occupied_sq_list.append(square)
 
                 for temp_occupied_sq in temp_occupied_sq_list:
                     temp_squares_to_delete_for_this_move = [temp_occupied_sq]
@@ -453,48 +449,63 @@ class Validator():
             except ValueError:
                 pass  # ignoring exceptions caused by trying to delete an item that is not in the lis
 
-        # checking for jump moves
-        jumping_moves = []
-        for move in moves:
-            if ((player_to_turn == PlayerColor.WHITE and playing_field[move[1]] in ['b', 'bb'])
-                    or (player_to_turn == PlayerColor.BLACK and playing_field[move[1]] in ['w', 'ww'])):
+        # # checking for jump moves
+        # jumping_moves = []
+        # for move in moves:
 
-                jump_move = [move[0], ""]
+        #     rowcol0 = self.get_rowcol_from_sq_string(move[0])
+        #     r0 = rowcol0[0]
+        #     c0 = rowcol0[1]
 
-                # if there is enemy figure in vicinity
-                if (player_to_turn == PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) or (
-                        player_to_turn == PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
+        #     rowcol1 = self.get_rowcol_from_sq_string(move[1])
+        #     r1 = rowcol1[0]
+        #     c1 = rowcol1[1]
 
-                    if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
-                        jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
-                    elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
-                        jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
+        #     if ((game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r1][c1].get_label() in ['b', 'bb'])
+        #             or (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r1][c1].get_label() in ['w', 'ww'])):
 
-                    if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
-                            (int(move[1][1]) - 1) >= 1) and (player_to_turn == PlayerColor.BLACK or playing_field[move[0]] in ['bb', 'ww']):
-                        jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
-                    elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
-                            (int(move[1][1]) + 1) >= 1) and (player_to_turn == PlayerColor.WHITE or playing_field[move[0]] in ['bb', 'ww']):
-                        jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
+        #         jump_move = [move[0], ""]
 
-                    if len(jump_move[1]) == 2:
-                        jumping_moves.append(jump_move)
+        #         # if there is enemy figure in vicinity
+        #         if not isinstance(game.game_field[r0][c0], str):
+        #             if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].get_label() in ['b', 'bb']) or (
+        #                     game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].get_label() in ['w', 'ww']):
 
-        # eliminating simple moves if any jumping moves are available
-        if jumping_moves:
-            moves = jumping_moves
+        #                 if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
+        #                     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
+        #                 elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
+        #                     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
 
-            # eliminating stone moves if any queen/king moves are available
-            queen_moves = []
-            for move in moves:
-                if playing_field[move[0]] in ['bb', 'ww']:
-                    queen_moves.append(move)
-            if queen_moves:
-                moves = queen_moves
+        #                 if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
+        #                         (int(move[1][1]) - 1) >= 1) and (game.get_player_to_turn == PlayerColor.BLACK or game.game_field[r0][c0].get_label() in ['bb', 'ww']):
+        #                     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
+        #                 elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
+        #                         (int(move[1][1]) + 1) >= 1) and (game.get_player_to_turn == PlayerColor.WHITE or game.game_field[r0][c0].get_label() in ['bb', 'ww']):
+        #                     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
 
-            # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
-            # moves = self.jump_move_simulation(moves, playing_field)
-            moves = jumping_moves  # !!! DOES NOT FEATURE FULL FUNCTIONALITY YET
+        #                 if len(jump_move[1]) == 2:
+        #                     jumping_moves.append(jump_move)
+
+        # # eliminating simple moves if any jumping moves are available
+        # if jumping_moves:
+        #     moves = jumping_moves
+
+        #     # eliminating stone moves if any queen/king moves are available
+        #     queen_moves = []
+        #     for move in moves:
+
+        #         rowcol0 = self.get_rowcol_from_sq_string(move[0])
+        #         r0 = rowcol0[0]
+        #         c0 = rowcol0[1]
+
+        #         if game.game_field[r0][c0].get_label() in ['bb', 'ww']:
+        #             queen_moves.append(move)
+        #     if queen_moves:
+        #         moves = queen_moves
+
+        #     # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
+        #     # moves = self.jump_move_simulation(moves, playing_field)
+        #     moves = jumping_moves
 
         # creating move objects
         obj_moves = []
@@ -509,7 +520,8 @@ class Validator():
         for obj_move in obj_moves:
             obj_figure = obj_move.get_figure
             obj_figure.moves_tree.add_move(obj_move)
-
+            
+'''
     def jump_move_simulation(self, moves, game_field):
         """
         Takes moves list on input, presumes all of them are jumping moves.
@@ -592,3 +604,4 @@ class Validator():
             squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
             for sq in squares_to_destroy:
                 game_field[sq] = None
+'''
