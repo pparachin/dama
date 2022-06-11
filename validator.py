@@ -342,7 +342,7 @@ class Validator():
                 output.append((letter + str((int(position[1]) + diameter))))
         return output
 
-    def find_all_valid_moves(self, game=Game(), obj_figure=Figure()):
+    def find_all_valid_moves(self, game=Game()):
         """
         Generates all possible moves for each figure but returns only valid moves.
         Output depends on which player is to turn.
@@ -463,18 +463,20 @@ class Validator():
 
                 jump_move = [move[0], ""]
 
+                # if there is enemy figure in vicinity
                 if (player_to_turn == PlayerColor.BLACK and playing_field[move[0]] in ['b', 'bb']) or (
                         player_to_turn == PlayerColor.WHITE and playing_field[move[0]] in ['w', 'ww']):
+
                     if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
                         jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
                     elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
                         jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
 
                     if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
-                            (int(move[1][1]) - 1) >= 1):
+                            (int(move[1][1]) - 1) >= 1) and (player_to_turn == PlayerColor.BLACK or playing_field[move[0]] in ['bb', 'ww']):
                         jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
                     elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
-                            (int(move[1][1]) + 1) >= 1):
+                            (int(move[1][1]) + 1) >= 1) and (player_to_turn == PlayerColor.WHITE or playing_field[move[0]] in ['bb', 'ww']):
                         jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
 
                     if len(jump_move[1]) == 2:
@@ -505,14 +507,70 @@ class Validator():
             temp_move = Move(move, game.game_field[r0][c0])
             obj_moves.append(temp_move)
 
-        # filtering out only moves for this particular figure and appending them to its move tree
+        # adding move objects to move trees of figures
         for obj_move in obj_moves:
-            if obj_move.get_figure == obj_figure:
-                obj_figure.moves_tree.add_move(obj_move)
+            obj_figure = obj_move.get_figure
+            obj_figure.moves_tree.add_move(obj_move)
 
-        # returning list of moves so it doesnt lose integrity with gui
-        # output = moves
-        # return output
+    def jump_move_simulation(self, moves, game_field):
+        """
+        Takes moves list on input, presumes all of them are jumping moves.
+        Simulates all possible outcomes of these moves a tests for any compulsory jump moves.
+        Returns list of moves and chained moves, if any.
+        Any chained moves would replace their predecessors - no need to check that after this function ended.
+        """
+        simulated_move_trees = []
+
+        # 1) transfering lists of strings into Move objects 
+        for move in moves:
+
+            # copying playing field so we avoid editing actual game and are just simulating what could happen
+            simulated_game_field = copy.deepcopy(game_field)
+
+            # for better navigation chained jumps will be stored in trees
+            simulated_moves_tree = MovesTree()
+            root_move = Move(move[0], move[1], simulated_game_field(move[0]), simulated_game_field)
+            simulated_moves_tree.set_root_move(root_move)
+            simulated_move_trees.append(simulated_moves_tree)
+
+        # 2) calculating all possible chained jump variations
+        for move_tree in simulated_move_trees:
+            self._simulation_subprocess(move_tree.get_root(), simulated_game_field)
+
+        # 3) transfering Move objects into lists of string
+
+    def _simulation_subprocess(self, move, simulated_game_field):
+        squares_of_interest = []
+
+        if move.figure in ['w', 'b']:
+            close_vicinity = self.get_circle(simulated_game_field, diameter=1)
+            further_vicinity = self.get_circle(simulated_game_field, diameter=2)
+            for closer_sq in close_vicinity:
+                for further_sq in further_vicinity:
+                    if (self.get_move_direction([move[0], closer_sq]) == self.get_move_direction(
+                            [move[0], further_sq]) and
+                            simulated_game_field[closer_sq] in move.enemies and
+                            simulated_game_field[further_sq] is None):
+                        move.force_birth(further_sq)
+
+        # considering all cases for kings and queens
+        elif root_move.figure in ['ww', 'bb']:
+            close_vicinity = []
+            temp_circle = self.get_circle(simulated_game_field, diameter=1)
+            previous_sq = None
+            for direction in temp_circle:
+                previous_sq = direction
+                for item in self.span([root_move.data[0], direction]):
+                    if (simulated_game_field[previous_sq] in root_move.enemies and
+                            simulated_game_field[item] is None):
+                        root_move.force_birth(further_sq)
+                    previous_sq = item
+
+        # after first set of childern has been generated the algorithm can repeat itself recursively
+        for child in root_move.children:
+            temp_gamefield = copy.deepcopy(simulated_game_field)
+            self.move_execution(child.data, temp_gamefield)
+            self._simulation_subprocess(child, temp_gamefield)
 
     def move_execution(self, move, game_field):
         """
@@ -536,60 +594,3 @@ class Validator():
             squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
             for sq in squares_to_destroy:
                 game_field[sq] = None
-
-    def jump_move_simulation(self, moves, game_field):
-        """
-        Takes moves list on input, presumes all of them are jumping moves.
-        Simulates all possible outcomes of these moves a tests for any compulsory jump moves.
-        Returns list of moves and chained moves, if any.
-        Any chained moves would replace their predecessors - no need to check that after this function ended.
-        """
-        simulated_move_trees_pointers = []
-
-        for move in moves:
-            # copying playing field so we avoid editing actual game and are just simulating what could happen
-            simulated_game_field = copy.deepcopy(game_field)
-            self.move_execution(move, simulated_game_field)
-
-            # for better navigation chained jumps will be stored in trees
-            simulated_moves_tree = MovesTree()
-            simulated_move_trees_pointers.append(simulated_moves_tree)
-
-            root_move = Move(move[0], move[1])
-            simulated_moves_tree.set_root_move(root_move)
-            root_move.set_figure(simulated_game_field[root_move.data[0]])
-            root_move.update_friends_and_foes()
-
-            self._simulation_subprocess(root_move, copy.deepcopy(simulated_game_field))
-
-    def _simulation_subprocess(self, root_move, simulated_game_field):
-        # considering all cases for regular stones
-        if root_move.figure in ['w', 'b']:
-            close_vicinity = self.get_circle(simulated_game_field, diameter=1)
-            further_vicinity = self.get_circle(simulated_game_field, diameter=2)
-            for closer_sq in close_vicinity:
-                for further_sq in further_vicinity:
-                    if (self.get_move_direction([root_move[0], closer_sq]) == self.get_move_direction(
-                            [root_move[0], further_sq]) and
-                            simulated_game_field[closer_sq] in root_move.enemies and
-                            simulated_game_field[further_sq] is None):
-                        root_move.force_birth(further_sq)
-
-        # considering all cases for kings and queens
-        elif root_move.figure in ['ww', 'bb']:
-            close_vicinity = []
-            temp_circle = self.get_circle(simulated_game_field, diameter=1)
-            previous_sq = None
-            for direction in temp_circle:
-                previous_sq = direction
-                for item in self.span([root_move.data[0], direction]):
-                    if (simulated_game_field[previous_sq] in root_move.enemies and
-                            simulated_game_field[item] is None):
-                        root_move.force_birth(further_sq)
-                    previous_sq = item
-
-        # after first set of childern has been generated the algorithm can repeat itself recursively
-        for child in root_move.children:
-            temp_gamefield = copy.deepcopy(simulated_game_field)
-            self.move_execution(child.data, temp_gamefield)
-            self._simulation_subprocess(child, temp_gamefield)

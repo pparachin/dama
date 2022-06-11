@@ -34,4 +34,4 @@ class Figure:
 
     def update_possible_moves(self):
         assert self._game is not None
-        self._game.validator.find_all_valid_moves(self._game, self)
+        self._game.validator.find_all_valid_moves(self._game)
