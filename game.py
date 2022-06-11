@@ -4,17 +4,22 @@ from gui import GUI
 from alias import GameDirection
 from validator import Validator
 from stone import Stone
+from lady import Lady
 
 
 class Game:
 
     def __init__(self, type_of_game, status):
+        self._figures = []
         self._type_of_game = type_of_game
         self.status = status
         validator = Validator()
-        self.game_field = self.generate_game_field("data/moves.csv")
+        self.game_field = self.generate_game_field_2("data/moves.csv")
         self._players = []
         self.game(self.status, validator)
+
+    def add_figure(self, figure):
+        self._figures.append(figure)
 
     def game(self, status, validator):
         gui = GUI(WIDTH=800, HEIGHT=800, DIMENSION=8, SQ_SIZE=100, images={}, FPS=30, WHITE=(255, 255, 255),
@@ -68,6 +73,30 @@ class Game:
             print("File does not exist!")
 
         return playing_field
+
+    def generate_game_field_2(self, game_file_path):
+        temp_dict_field = self.generate_game_field(game_file_path)
+        temp_2D_field = self.validator.game_field_to2D(temp_dict_field)
+
+        for key in temp_dict_field.keys():
+            # skip empty squares
+            if temp_dict_field[key] is None:
+                continue
+            # different object for lady/queen/king etc.
+            is_lady = False
+            if temp_dict_field[key] in ['bb', 'ww']:
+                is_lady = True
+            #create figure and place it on the board
+            position = key
+            color = StoneColor.WHITE if temp_dict_field[key] in ['w', 'ww'] else StoneColor.BLACK
+            status = True
+            label = temp_dict_field[key]
+            advantage = None
+            temp_figure = Lady(position, color, status, label, advantage) if is_lady else Stone(position, color, status, label, advantage)
+            self.add_figure(temp_figure)
+            temp_dict_field[self.validator.get_rowcol_from_sq_string(key)] = temp_figure
+
+            return temp_dict_field
 
     def get_players(self):
         return self._players
