@@ -64,18 +64,25 @@ class GUI:
 
 
     def draw_score(self, screen, white_score, black_score):
+        location = pg.mouse.get_pos()
         screen.blit(self._images["wood"], (self._WIDTH - 5, 1, self._SWIDTH, self._HEIGHT))
         screen.blit(self._images["ww_transformed"], (self._WIDTH + 10, 0))
         screen.blit(self._images["bb_transformed"], (self._WIDTH + 140, 0))
         player_font = pg.font.Font("data/FROSTBITE.ttf", 30)
 
-        quit_game = player_font.render("QUIT GAME", True, self._RED)
+        # Check if user is hovering over the button for quit game
+        quit_game = player_font.render("QUIT GAME", True, self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                        and 749 <= location[1] <= 770 else self._RED)
         screen.blit(quit_game, (self._WIDTH + 40, 750))
 
-        return_to_menu = player_font.render("MENU", True, self._RED)
+        # Check if user is hovering over the button for menu
+        return_to_menu = player_font.render("MENU", True, self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
+                                            and 699 <= location[1] <= 720 else self._RED)
         screen.blit(return_to_menu, (self._WIDTH + 70, 700))
 
-        save_game = player_font.render("SAVE GAME", True, self._RED)
+        # Check if user is hovering over the button for save game
+        save_game = player_font.render("SAVE GAME", True, self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                            and 649 <= location[1] <= 670 else self._RED)
         screen.blit(save_game, (self._WIDTH + 40, 650))
 
         score_font = pg.font.Font("data/FROSTBITE.ttf", 70)
@@ -155,8 +162,8 @@ class GUI:
         else:
             screen.blit(self._images["bb"], (200, 265))
             screen.blit(self._images["ww"], (330, 300))
-            draw = winner_font.render("IT'S A DRAW", True, self._RED)
-            screen.blit(draw, (15, 170))
+            draw = winner_font.render("A DRAW", True, self._RED)
+            screen.blit(draw, (150, 170))
         
         while win:
             for event in pg.event.get():
@@ -225,8 +232,8 @@ class GUI:
                     location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
                     col = int(location[0] // self._SQ_SIZE)
                     row = int(location[1] // self._SQ_SIZE)
-                    valid_moves = validator.find_all_valid_moves(
-                        validator.translate_GUI_board_to_Validator_board(self._board), players[0].get_color())
+                    #valid_moves = validator.find_all_valid_moves(
+                    #    validator.translate_GUI_board_to_Validator_board(self._board), players[0].get_color())
 
                     # Check if user click on the button for quit game
                     if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
