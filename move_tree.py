@@ -31,7 +31,7 @@ class Move():
     def __init__(self, input_list_of_squares, input_figure, input_board=None):
         self.data = input_list_of_squares
         self.children = []
-        self.board_state = input_board # This attrib is here only for simulating trees further (AI, jump_moves)
+        self.board_state = input_board # This attrib is here only for simulating trees further (AI, jump_moves)         
         self.figure = input_figure
         self.parent = None
 
