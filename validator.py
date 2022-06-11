@@ -333,7 +333,7 @@ class Validator():
         moves = []  # contains lists [from, inbetween1, inbetween2, ... , to]
 
         # which figures to evaluate
-        if game.get == PlayerColor.BLACK:
+        if game.get_player_to_turn == PlayerColor.BLACK:
             figures_for_evaluation = ["b", "bb"]
         else:
             figures_for_evaluation = ["w", "ww"]
@@ -530,8 +530,8 @@ class Validator():
 
         # 2) calculating all possible chained jump variations
         for move_tree in simulated_move_trees:
-            game.sync_figure_positions_with_field()
-            self._simulation_subprocess(move_tree.get_root(), simulated_game_field)
+            game.sync_figure_positions_with_field(game.get_game_field())
+            self._simulation_subprocess(move_tree.get_root(), simulated_game_field, game)
 
         # 3) transfering Move objects into lists of string
         for tree in simulated_move_trees:
@@ -539,16 +539,17 @@ class Validator():
                 output.append(move)
         
         # 4) repairing figure positions that may have been changed during _simulation_subprocess
-        game.sync_figure_positions_with_field()
+        game.sync_figure_positions_with_field(game.get_game_field())
 
         return output
 
-    def _simulation_subprocess(self, move, simulated_game_field):
+    def _simulation_subprocess(self, move, simulated_game_field, game):
 
-        # 1) looking around
+        game.sync_figure_positions_with_field(simulated_game_field)
         squares_of_interest = []
 
         if move.get_figure().get_label() in ['w', 'b']:
+            enemies = ['w', 'ww'] if move.get_figure().get_label() == 'b' else ['b', 'bb']
             close_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=1, color=move.get_figure().get_color())
             further_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=2, color=move.get_figure().get_color())
             for closer_sq in close_vicinity:
@@ -563,9 +564,9 @@ class Validator():
 
                     if (self.get_move_direction([move[0], closer_sq]) == self.get_move_direction(
                             [move[0], further_sq]) and
-                            simulated_game_field
-                            simulated_game_field[closer_sq] in move.enemies and
-                            simulated_game_field[further_sq] is None):
+                            not isinstance(simulated_game_field[clo_r][clo_c], str) and
+                            simulated_game_field[clo_r][clo_c].get_label() in enemies and
+                            isinstance(simulated_game_field[fur_r][fur_c], str)):
                         move.force_birth(further_sq)
 
         # considering all cases for kings and queens
