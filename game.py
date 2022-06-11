@@ -14,10 +14,18 @@ class Game:
         self._figures = []
         self._type_of_game = type_of_game
         self.status = status
-        self._validator = Validator()
+        self.validator = Validator()
         self.game_field = self.generate_game_field_2("data/moves.csv")
         self._players = []
-        self.game(self.status, self._validator)
+        self.game(self.status, self.validator)
+        self._player_to_turn = None
+
+    def get_player_to_turn(self):
+        return self._player_to_turn
+
+    def next_turn(self):
+        if self._player_to_turn is PlayerColor.WHITE: self._player_to_turn = PlayerColor.BLACK
+        elif self._player_to_turn is PlayerColor.BLACK: self._player_to_turn = PlayerColor.WHITE
 
     def add_figure(self, figure):
         self._figures.append(figure)
@@ -77,13 +85,13 @@ class Game:
 
     def generate_game_field_2(self, game_file_path):
         if self._is_new_game: 
-            if self._validator.validate_base_setup(game_file_path) != 0:
+            if self.validator.validate_base_setup(game_file_path) != 0:
                 return None
             else:
                 self._is_new_game = False
 
-        temp_dict_field = self._validator.old_generate_game_field(game_file_path)
-        temp_2D_field = self._validator.game_field_to2D(temp_dict_field)
+        temp_dict_field = self.validator.old_generate_game_field(game_file_path)
+        temp_2D_field = self.validator.game_field_to2D(temp_dict_field)
 
         for key in temp_dict_field.keys():
             # skip empty squares
@@ -99,8 +107,9 @@ class Game:
             status = 1
             label = temp_dict_field[key]
             temp_figure = Lady(position, color, status, label, 1) if is_lady else Stone(position, color, status, label, 0)
+            temp_figure.set_game(self)
             self.add_figure(temp_figure)
-            rowcol = self._validator.get_rowcol_from_sq_string(key)
+            rowcol = self.validator.get_rowcol_from_sq_string(key)
             row, col = rowcol[0], rowcol[1]
             temp_2D_field[row][col] = temp_figure
 
