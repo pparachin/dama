@@ -9,7 +9,8 @@ from lady import Lady
 
 class Game:
 
-    def __init__(self, type_of_game, status):
+    def __init__(self, type_of_game, status, is_new_game=True):
+        self._is_new_game = is_new_game
         self._figures = []
         self._type_of_game = type_of_game
         self.status = status
@@ -75,7 +76,11 @@ class Game:
         return playing_field
 
     def generate_game_field_2(self, game_file_path):
-        temp_dict_field = self._validator.generate_game_field(game_file_path)
+        if self._is_new_game: 
+            if self._validator.validate_base_setup(game_file_path) != 0:
+                return None
+
+        temp_dict_field = self._validator.old_generate_game_field(game_file_path)
         temp_2D_field = self._validator.game_field_to2D(temp_dict_field)
 
         for key in temp_dict_field.keys():
@@ -89,9 +94,9 @@ class Game:
             #create figure and place it on the board
             position = key
             color = StoneColor.WHITE if temp_dict_field[key] in ['w', 'ww'] else StoneColor.BLACK
-            status = True
+            status = 1
             label = temp_dict_field[key]
-            advantage = None
+            advantage = 0
             temp_figure = Lady(position, color, status, label, advantage) if is_lady else Stone(position, color, status, label, advantage)
             self.add_figure(temp_figure)
             temp_dict_field[self._validator.get_rowcol_from_sq_string(key)] = temp_figure

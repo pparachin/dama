@@ -36,6 +36,32 @@ class Validator():
 
         return output
 
+    @staticmethod
+    def old_generate_game_field(game_file_path):
+        """
+        This function opens .csv file and outputs corresponding "game field dictionary".
+        !!! Note: This function does NOT validate if the text inside file is correct. !!!
+        """
+        playing_field = {}
+        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        for letter in letters:
+            for number in range(1, 9):
+                tag = str(letter) + str(number)
+                playing_field[tag] = None
+
+        # putting figures in
+        try:
+            with open(game_file_path) as game_file:
+                game_file_contents = game_file.read().splitlines()
+                for line in game_file_contents:
+                    playing_field[line[0:2]] = line[3:]
+                game_file.close()
+                output = []
+        except FileNotFoundError:
+            output = None
+
+        return playing_field
+
     def game_field_to2D(self, field):
         board = []
         for dimension in range(8):
