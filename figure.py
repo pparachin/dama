@@ -1,3 +1,4 @@
+from move_tree import MovesTree
 from validator import Validator
 from game import Game
 from alias import *
@@ -17,6 +18,7 @@ class Figure:
         self._label = label
         self._advantage = advantage
         self._game = Game() # NUTNO PREPSAT NA NONE, JEN PRO DEBUGGING JE TU Game()
+        self.moves_tree = MovesTree()
 
     def show(self):
         print(f"{self._position} {self._color} {self._status} {self._label}")
@@ -30,9 +32,6 @@ class Figure:
     def set_game(self, game):
         self._game = game
 
-    def get_possible_moves(self):
+    def update_possible_moves(self):
         assert self._game is not None
-
-        player_color = PlayerColor.WHITE if self._color == StoneColor.WHITE else StoneColor.BLACK
-        for move in self._game.validator.find_all_valid_moves(self._game.game_field, self._game.get_player_to_turn):
-            pass # DOES NOT WORK RN, VALIDATOR HAS TO BE CHANGED TO OPERATE WITH OBJECTS, NOT STRINGS
+        self._game.validator.find_all_valid_moves(self._game, self)

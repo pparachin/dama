@@ -342,7 +342,7 @@ class Validator():
                 output.append((letter + str((int(position[1]) + diameter))))
         return output
 
-    def find_all_valid_moves(self, game=Game()):
+    def find_all_valid_moves(self, game=Game(), obj_figure=Figure()):
         """
         Generates all possible moves for each figure but returns only valid moves.
         Output depends on which player is to turn.
@@ -354,6 +354,7 @@ class Validator():
         """
         letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         all_square_names = self.generate_list_of_square_names()
+        output = None
 
         # GENERATING ALL MOVES
         moves = []  # contains lists [from, inbetween1, inbetween2, ... , to]
@@ -495,8 +496,23 @@ class Validator():
             # moves = self.jump_move_simulation(moves, playing_field)
             moves = jumping_moves  # !!! DOES NOT FEATURE FULL FUNCTIONALITY YET
 
-        output = moves
-        return output
+        # creating move objects
+        obj_moves = []
+        for move in moves:
+            rowcol = self.get_rowcol_from_sq_string(move[0])
+            r = rowcol[0]
+            c = rowcol[1]
+            temp_move = Move(move, game.game_field[r0][c0])
+            obj_moves.append(temp_move)
+
+        # filtering out only moves for this particular figure and appending them to its move tree
+        for obj_move in obj_moves:
+            if obj_move.get_figure == obj_figure:
+                obj_figure.moves_tree.add_move(obj_move)
+
+        # returning list of moves so it doesnt lose integrity with gui
+        # output = moves
+        # return output
 
     def move_execution(self, move, game_field):
         """
