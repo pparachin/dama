@@ -95,7 +95,7 @@ class Validator():
         """
         assert isinstance(game_file_path, str)
 
-        base_setups = [["a1,w",
+        base_setup =  ["a1,w",
                         "a3,w",
                         "a7,b",
                         "b2,w",
@@ -118,69 +118,26 @@ class Validator():
                         "g7,b",
                         "h2,w",
                         "h6,b",
-                        "h8,b"],
-                       ["a1,b",
-                        "a3,b",
-                        "a7,w",
-                        "b2,b",
-                        "b6,w",
-                        "b8,w",
-                        "c1,b",
-                        "c3,b",
-                        "c7,w",
-                        "d2,b",
-                        "d6,w",
-                        "d8,w",
-                        "e1,b",
-                        "e3,b",
-                        "e7,w",
-                        "f2,b",
-                        "f6,w",
-                        "f8,w",
-                        "g1,b",
-                        "g3,b",
-                        "g7,w",
-                        "h2,b",
-                        "h6,w",
-                        "h8,w"]]
+                        "h8,b"]
 
         output = None
         try:
             with open(game_file_path) as game_file:
                 game_file_contents = game_file.read().splitlines()
-
                 setup_v1 = None
-                setup_v2 = None
 
-                for valid_line in base_setups[0]:
+                for valid_line in base_setup:
                     if valid_line not in game_file_contents:
                         setup_v1 = False
                         break
                     setup_v1 = True
 
-                for valid_line in base_setups[1]:
-                    if valid_line not in game_file_contents:
-                        setup_v2 = False
-                        break
-                    setup_v2 = True
-
                 if setup_v1:
                     for line in game_file_contents:
-                        if line not in base_setups[0]:
+                        if line not in base_setup:
                             output = 1
                             break
                     output = 0
-
-                # This section was commented out due to setup_v2 NOT being 
-                # allowed by http://damweb.cz/pravidla/cdfull.html rules.
-                #
-                # elif setup_v2:
-                #     for line in game_file_contents:
-                #         if line not in base_setups[1]:
-                #             output = 1
-                #             break
-                #     output = 0
-
                 else:
                     output = 1
 
@@ -327,11 +284,11 @@ class Validator():
         output = [start, self.find_inbetween_coords(start, end), end]
         return output
 
-    @staticmethod
-    def get_circle(position, game_field, diameter=1):
+    def get_circle(self, position, diameter=1):
         """
         Returns list of positions that are diameter away from the input position in each diagonal direction.
         """
+        game_field = self.generate_empty_field() # for reference only
         output = []
         for letter in [chr(ord(position[0]) - diameter), chr(ord(position[0]) + diameter)]:
             if (letter + str((int(position[1]) - diameter))) in game_field:
@@ -339,6 +296,25 @@ class Validator():
             if (letter + str((int(position[1]) + diameter))) in game_field:
                 output.append((letter + str((int(position[1]) + diameter))))
         return output
+
+    def get_std_twin(self, position, diameter=1, color=PlayerColor.WHITE):
+        circle = self.get_circle(position, diameter)
+        if color == StoneColor.WHITE: is_white = True
+        else: is_white = False
+        min_sq = 9
+        for sq in circle:
+            if sq[1] < min_sq: min_sq = sq[1]
+        sqs_to_remove = []
+        for sq in circle:
+            if is_white and sq[1] == min_sq: sqs_to_remove.append(sq)
+            elif not is_white and sq[1] > min_sq: sqs_to_remove.append(sq)
+        for sq in sqs_to_remove:
+            try:
+                circle.remove(sq)
+            except ValueError:
+                pass  # ignoring exceptions caused by trying to delete an item that is not in the list
+        return circle
+
 
     def find_all_valid_moves(self, game):
         """
@@ -447,65 +423,64 @@ class Validator():
             try:
                 moves.remove(move)
             except ValueError:
-                pass  # ignoring exceptions caused by trying to delete an item that is not in the lis
+                pass  # ignoring exceptions caused by trying to delete an item that is not in the list
 
-        # # checking for jump moves
-        # jumping_moves = []
-        # for move in moves:
+        # checking for jump moves
+        jumping_moves = []
+        for move in moves:
 
-        #     rowcol0 = self.get_rowcol_from_sq_string(move[0])
-        #     r0 = rowcol0[0]
-        #     c0 = rowcol0[1]
+            rowcol0 = self.get_rowcol_from_sq_string(move[0])
+            r0 = rowcol0[0]
+            c0 = rowcol0[1]
 
-        #     rowcol1 = self.get_rowcol_from_sq_string(move[1])
-        #     r1 = rowcol1[0]
-        #     c1 = rowcol1[1]
+            rowcol1 = self.get_rowcol_from_sq_string(move[1])
+            r1 = rowcol1[0]
+            c1 = rowcol1[1]
 
-        #     if ((game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r1][c1].get_label() in ['b', 'bb'])
-        #             or (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r1][c1].get_label() in ['w', 'ww'])):
+            if ((game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r1][c1].get_label() in ['b', 'bb'])
+                    or (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r1][c1].get_label() in ['w', 'ww'])):
 
-        #         jump_move = [move[0], ""]
+                jump_move = [move[0], ""]
 
-        #         # if there is enemy figure in vicinity
-        #         if not isinstance(game.game_field[r0][c0], str):
-        #             if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].get_label() in ['b', 'bb']) or (
-        #                     game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].get_label() in ['w', 'ww']):
+                # if there is enemy figure in vicinity
+                if not isinstance(game.game_field[r0][c0], str):
+                    if (game.get_player_to_turn == PlayerColor.BLACK and game.game_field[r0][c0].get_label() in ['b', 'bb']) or (
+                            game.get_player_to_turn == PlayerColor.WHITE and game.game_field[r0][c0].get_label() in ['w', 'ww']):
 
-        #                 if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
-        #                     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
-        #                 elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
-        #                     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
+                        if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
+                            jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
+                        elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
+                            jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
 
-        #                 if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
-        #                         (int(move[1][1]) - 1) >= 1) and (game.get_player_to_turn == PlayerColor.BLACK or game.game_field[r0][c0].get_label() in ['bb', 'ww']):
-        #                     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
-        #                 elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
-        #                         (int(move[1][1]) + 1) >= 1) and (game.get_player_to_turn == PlayerColor.WHITE or game.game_field[r0][c0].get_label() in ['bb', 'ww']):
-        #                     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
+                        if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
+                                (int(move[1][1]) - 1) >= 1) and (game.get_player_to_turn == PlayerColor.BLACK or game.game_field[r0][c0].get_label() in ['bb', 'ww']):
+                            jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
+                        elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
+                                (int(move[1][1]) + 1) >= 1) and (game.get_player_to_turn == PlayerColor.WHITE or game.game_field[r0][c0].get_label() in ['bb', 'ww']):
+                            jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
 
-        #                 if len(jump_move[1]) == 2:
-        #                     jumping_moves.append(jump_move)
+                        if len(jump_move[1]) == 2:
+                            jumping_moves.append(jump_move)
 
-        # # eliminating simple moves if any jumping moves are available
-        # if jumping_moves:
-        #     moves = jumping_moves
+        # eliminating simple moves if any jumping moves are available
+        if jumping_moves:
+            moves = jumping_moves
 
-        #     # eliminating stone moves if any queen/king moves are available
-        #     queen_moves = []
-        #     for move in moves:
+            # eliminating stone moves if any queen/king moves are available
+            queen_moves = []
+            for move in moves:
 
-        #         rowcol0 = self.get_rowcol_from_sq_string(move[0])
-        #         r0 = rowcol0[0]
-        #         c0 = rowcol0[1]
+                rowcol0 = self.get_rowcol_from_sq_string(move[0])
+                r0 = rowcol0[0]
+                c0 = rowcol0[1]
 
-        #         if game.game_field[r0][c0].get_label() in ['bb', 'ww']:
-        #             queen_moves.append(move)
-        #     if queen_moves:
-        #         moves = queen_moves
+                if game.game_field[r0][c0].get_label() in ['bb', 'ww']:
+                    queen_moves.append(move)
+            if queen_moves:
+                moves = queen_moves
 
-        #     # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
-        #     # moves = self.jump_move_simulation(moves, playing_field)
-        #     moves = jumping_moves
+            # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
+            moves = self.jump_move_simulation(moves, game)
 
         # creating move objects
         obj_moves = []
@@ -513,7 +488,7 @@ class Validator():
             rowcol = self.get_rowcol_from_sq_string(move[0])
             r = rowcol[0]
             c = rowcol[1]
-            temp_move = Move(move, game.game_field[r0][c0])
+            temp_move = Move(move, game.game_field[r][c])
             obj_moves.append(temp_move)
 
         # adding move objects to move trees of figures
@@ -521,8 +496,7 @@ class Validator():
             obj_figure = obj_move.get_figure
             obj_figure.moves_tree.add_move(obj_move)
             
-'''
-    def jump_move_simulation(self, moves, game_field):
+    def jump_move_simulation(self, moves, game):
         """
         Takes moves list on input, presumes all of them are jumping moves.
         Simulates all possible outcomes of these moves a tests for any compulsory jump moves.
@@ -530,41 +504,67 @@ class Validator():
         Any chained moves would replace their predecessors - no need to check that after this function ended.
         """
         simulated_move_trees = []
+        output = []
 
         # 1) transfering lists of strings into Move objects 
         for move in moves:
 
             # copying playing field so we avoid editing actual game and are just simulating what could happen
-            simulated_game_field = copy.deepcopy(game_field)
+            simulated_game_field = copy.deepcopy(game.game_field)
 
             # for better navigation chained jumps will be stored in trees
             simulated_moves_tree = MovesTree()
-            root_move = Move(move[0], move[1], simulated_game_field(move[0]), simulated_game_field)
+
+            rowcol = self.get_rowcol_from_sq_string(move[0])
+            r = rowcol[0]
+            c = rowcol[1]
+
+            root_move = Move(input_list_of_squares=[move[0], move[1]], input_figure=game.game_field[r][c], input_board=simulated_game_field)
             simulated_moves_tree.set_root_move(root_move)
             simulated_move_trees.append(simulated_moves_tree)
 
         # 2) calculating all possible chained jump variations
         for move_tree in simulated_move_trees:
+            game.sync_figure_positions_with_field()
             self._simulation_subprocess(move_tree.get_root(), simulated_game_field)
 
         # 3) transfering Move objects into lists of string
+        for tree in simulated_move_trees:
+            for move in tree.find_all_possible_moves():
+                output.append(move)
+        
+        # 4) repairing figure positions that may have been changed during _simulation_subprocess
+        game.sync_figure_positions_with_field()
+
+        return output
 
     def _simulation_subprocess(self, move, simulated_game_field):
+
+        # 1) looking around
         squares_of_interest = []
 
-        if move.figure in ['w', 'b']:
-            close_vicinity = self.get_circle(simulated_game_field, diameter=1)
-            further_vicinity = self.get_circle(simulated_game_field, diameter=2)
+        if move.get_figure().get_label() in ['w', 'b']:
+            close_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=1, color=move.get_figure().get_color())
+            further_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=2, color=move.get_figure().get_color())
             for closer_sq in close_vicinity:
                 for further_sq in further_vicinity:
+
+                    rowcol = self.get_rowcol_from_sq_string(closer_sq)
+                    clo_r = rowcol[0]
+                    clo_c = rowcol[1]
+                    rowcol = self.get_rowcol_from_sq_string(further_sq)
+                    fur_r = rowcol[0]
+                    fur_c = rowcol[1]
+
                     if (self.get_move_direction([move[0], closer_sq]) == self.get_move_direction(
                             [move[0], further_sq]) and
+                            simulated_game_field
                             simulated_game_field[closer_sq] in move.enemies and
                             simulated_game_field[further_sq] is None):
                         move.force_birth(further_sq)
 
         # considering all cases for kings and queens
-        elif root_move.figure in ['ww', 'bb']:
+        elif move.get_figure().get_label() in ['ww', 'bb']:
             close_vicinity = []
             temp_circle = self.get_circle(simulated_game_field, diameter=1)
             previous_sq = None
@@ -581,27 +581,62 @@ class Validator():
             temp_gamefield = copy.deepcopy(simulated_game_field)
             self.move_execution(child.data, temp_gamefield)
             self._simulation_subprocess(child, temp_gamefield)
+        
 
-    def move_execution(self, move, game_field):
+        for i in range(len(move) - 1):
+            # selected "friendly" figure transportation
+            game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
+            game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]] = None
+
+            # possible uprank
+            contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+            if contents_of_next_square.get_label() == 'b' and contents_of_next_square.get_position() in ['a1', 'c1', 'e1', 'g1']:
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
+                old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+                new_lady = Lady().__dict__.update(old_stone.__dict__)
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
+
+            contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+            if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8', 'f8', 'h8']:
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
+                old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+                new_lady = Lady().__dict__.update(old_stone.__dict__)
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
+
+            # "enemy" figure deletion
+            squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
+            for sq in squares_to_destroy:
+                game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
+
+    def move_execution(self, input_move, game_field):
         """
         Takes game_field dictionary and move on input.
         Performs the move and changes game_field accordingly.
         Returns changed game_field on output.
         """
-        for i in range(len(move) - 1):
-            # selected "friendly" figure transportation
-            game_field[move[i + 1]] = game_field[move[i]]
-            game_field[move[i]] = None
+        for move in input_move.find_all_possible_moves():
 
-            # possible uprank
-            if game_field[move[i + 1]] == 'b' and move[i + 1] in ['a1', 'c1', 'e1', 'g1']:
-                game_field[move[i + 1]] = 'bb'
+            for i in range(len(move) - 1):
+                # selected "friendly" figure transportation
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
+                game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]] = None
 
-            if game_field[move[i + 1]] == 'w' and move[i + 1] in ['b8', 'd8', 'f8', 'h8']:
-                game_field[move[i + 1]] = 'ww'
+                # possible uprank
+                contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+                if contents_of_next_square.get_label() == 'b' and contents_of_next_square.get_position() in ['a1', 'c1', 'e1', 'g1']:
+                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
+                    old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+                    new_lady = Lady().__dict__.update(old_stone.__dict__)
+                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 
-            # "enemy" figure deletion
-            squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
-            for sq in squares_to_destroy:
-                game_field[sq] = None
-'''
+                contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+                if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8', 'f8', 'h8']:
+                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
+                    old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]]
+                    new_lady = Lady().__dict__.update(old_stone.__dict__)
+                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
+
+                # "enemy" figure deletion
+                squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
+                for sq in squares_to_destroy:
+                    game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None

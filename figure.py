@@ -10,12 +10,11 @@ class Figure:
     # Status = zda je figurka stále na desce nebo byla odebrána
     # Label = název figurky
 
-    def __init__(self, position, color, status, label, advantage):
+    def __init__(self, position, color, status, label):
         self._position = position
         self._color = color
         self._status = status
         self._label = label
-        self._advantage = advantage
         self.moves_tree = MovesTree()
 
     def show(self):
@@ -26,3 +25,9 @@ class Figure:
 
     def get_label(self):
         return self._label
+
+    def set_position(self, position):
+        self._position = position
+
+    def set_label(self, newlabel):
+        self._label = newlabel

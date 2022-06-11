@@ -119,3 +119,11 @@ class Game:
 
     def get_status(self):
         return self.status
+
+    def sync_figure_positions_with_field(self, input_field):
+        field = input_field
+        for figure in self._figures:
+            for r in range(8):
+                for c in range(8):
+                    if field[r][c] is figure:
+                        figure.set_position(self.validator.get_sq_string_from_2D_board(r, c))
