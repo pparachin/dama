@@ -1,8 +1,10 @@
 # general modules
 import copy
+from types import NoneType
 
 # our modules
 from alias import *
+from figure import Figure
 from move_tree import *
 from stone import Stone
 from lady import Lady
@@ -366,7 +368,7 @@ class Validator():
             c = rowcol[1]
 
             for figure in figures_for_evaluation:
-                if not isinstance(game_field[r][c], str):
+                if not isinstance(game_field[r][c], (str, NoneType)) and isinstance(game_field[r][c], Figure) and (game_field[r][c].get_label() == figure):
 
                     # different figure abilities
                     if len(figure) == 1:
@@ -418,6 +420,7 @@ class Validator():
                 temp_line = self.span(move)
                 temp_direction = self.get_move_direction(move)
                 temp_occupied_sq_list = []
+
 
                 for square in temp_line:
 
@@ -535,8 +538,6 @@ class Validator():
         for obj_move in obj_moves:
             obj_figure = obj_move.get_figure()
             obj_figure.moves_tree.add_move(obj_move)
-
-        print(control_output)
 
         # control output
         return control_output
