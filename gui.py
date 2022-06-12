@@ -1,5 +1,6 @@
 import pygame as pg
 from alias import PlayerColor
+from figure import Figure
 
 
 class GUI:
@@ -53,7 +54,8 @@ class GUI:
         for row in range(self._DIMENSION):
             for col in range(self._DIMENSION):
                 piece = board[row][col]
-                if piece != "-":
+                #if piece != "-":
+                if isinstance(piece, Figure):
                     screen.blit(self._images[piece.get_label() + "_transformed"],
                                 (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
 
@@ -312,3 +314,4 @@ class GUI:
                 if validator.get_sq_string_from_2D_board(r2, c2) in moves:
                     #print pro test -> potřeba nahradit funkcí execute_move
                     print(f"piece moved from {validator.get_sq_string_from_2D_board(r, c)} to {validator.get_sq_string_from_2D_board(r2, c2)}") 
+                    validator.move_execution([validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)], board)

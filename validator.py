@@ -647,43 +647,44 @@ class Validator():
         Performs the move and changes game_field accordingly.
         Returns changed game_field on output.
         """
-        for move in get_moves(input_move):
+        #for move in get_moves(input_move):
+        move = input_move
 
-            for i in range(len(move) - 1):
-                # selected "friendly" figure transportation
-                old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]]
+        for i in range(len(move) - 1):
+            # selected "friendly" figure transportation
+            old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                self.get_rowcol_from_sq_string(move[i + 1])[1]]
 
+            game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                self.get_rowcol_from_sq_string(move[i + 1])[1]] = \
+                game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
+            game_field[self.get_rowcol_from_sq_string(move[i])[0]][
+                self.get_rowcol_from_sq_string(move[i])[1]] = None
+
+            # possible uprank
+            contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                self.get_rowcol_from_sq_string(move[i + 1])[1]]
+            if contents_of_next_square.get_label() == 'b' and contents_of_next_square.get_position() in ['a1', 'c1',
+                                                                                                            'e1',
+                                                                                                            'g1']:
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]] = \
-                    game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
-                game_field[self.get_rowcol_from_sq_string(move[i])[0]][
-                    self.get_rowcol_from_sq_string(move[i])[1]] = None
+                    self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
+                new_lady = Lady().__dict__.update(old_stone.__dict__)
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                    self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 
-                # possible uprank
-                contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]]
-                if contents_of_next_square.get_label() == 'b' and contents_of_next_square.get_position() in ['a1', 'c1',
-                                                                                                             'e1',
-                                                                                                             'g1']:
-                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                        self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
-                    new_lady = Lady().__dict__.update(old_stone.__dict__)
-                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                        self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
+            contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                self.get_rowcol_from_sq_string(move[i + 1])[1]]
+            if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8',
+                                                                                                            'f8',
+                                                                                                            'h8']:
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                    self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
+                new_lady = Lady().__dict__.update(old_stone.__dict__)
+                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
+                    self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 
-                contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]]
-                if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8',
-                                                                                                             'f8',
-                                                                                                             'h8']:
-                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                        self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
-                    new_lady = Lady().__dict__.update(old_stone.__dict__)
-                    game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                        self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
-
-                # "enemy" figure deletion
-                squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
-                for sq in squares_to_destroy:
-                    game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
+            # "enemy" figure deletion
+            squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
+            for sq in squares_to_destroy:
+                game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
