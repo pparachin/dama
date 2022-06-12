@@ -605,8 +605,8 @@ class Validator():
                     fur_r = rowcol[0]
                     fur_c = rowcol[1]
 
-                    if (self.get_move_direction([move[0], closer_sq]) == self.get_move_direction(
-                            [move[0], further_sq]) and
+                    if (self.get_move_direction([move.get_data()[0], closer_sq]) == self.get_move_direction(
+                            [move.get_data()[0], further_sq]) and
                             not isinstance(simulated_game_field[clo_r][clo_c], str) and
                             simulated_game_field[clo_r][clo_c].get_label() in enemies and
                             isinstance(simulated_game_field[fur_r][fur_c], str)):
