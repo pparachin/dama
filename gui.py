@@ -263,7 +263,7 @@ class GUI:
                     location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
                     col = int(location[0] // self._SQ_SIZE)
                     row = int(location[1] // self._SQ_SIZE)
-                    # valid_moves = validator.find_all_valid_moves(
+                    valid_moves = validator.find_all_valid_moves(game, player_to_turn)
                     #    validator.translate_GUI_board_to_Validator_board(self._board), players[0].get_color())
 
                     status = self.buttons_click_check(location, players)
