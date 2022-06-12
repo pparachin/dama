@@ -278,8 +278,8 @@ class GUI:
                         selectedSQ = (row, col)
                         player_clicks.append(selectedSQ)
                     if len(player_clicks) == 2:  # check if it was 2nd click
-                        self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field, game)
-                            #player_to_turn = game.next_turn()
+                        if self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field, game) == True:
+                            player_to_turn = game.next_turn()
                         player_clicks = []
                         selectedSQ = ()
 
@@ -310,13 +310,13 @@ class GUI:
             c = selectedSQ[1]
             r2 = finalSQ[0]
             c2 = finalSQ[1]
-            if board[r][c] != None:
+            if board[r][c] is not None:
                 for move in valid_moves:
                     if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
                         moves.append(move[-1])
                 if validator.get_sq_string_from_2D_board(r2, c2) in moves:
                     # print pro test -> potřeba nahradit funkcí execute_move
-                    game_field = validator.move_execution(
+                    validator.move_execution(
                         [validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)],
                         board)
-                    return game_field
+                    return True
