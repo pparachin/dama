@@ -321,12 +321,12 @@ class Validator():
             is_white = False
         min_sq = 9
         for sq in circle:
-            if sq[1] < min_sq: min_sq = sq[1]
+            if int(sq[1]) < min_sq: min_sq = int(sq[1])
         sqs_to_remove = []
         for sq in circle:
-            if is_white and sq[1] == min_sq:
+            if is_white and int(sq[1]) == min_sq:
                 sqs_to_remove.append(sq)
-            elif not is_white and sq[1] > min_sq:
+            elif not is_white and int(sq[1]) > min_sq:
                 sqs_to_remove.append(sq)
         for sq in sqs_to_remove:
             try:
