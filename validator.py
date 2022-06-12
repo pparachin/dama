@@ -543,7 +543,7 @@ class Validator():
 
         # 3) transfering Move objects into lists of string
         for tree in simulated_move_trees:
-            for move in tree.find_all_possible_moves():
+            for move in get_moves(tree):
                 output.append(move)
 
         # 4) repairing figure positions that may have been changed during _simulation_subprocess
@@ -554,8 +554,9 @@ class Validator():
     def _simulation_subprocess(self, move, simulated_game_field, game):
 
         game.sync_figure_positions_with_field(simulated_game_field)
-        squares_of_interest = []
+        to_be_calculated = []
 
+        # considering all cases for Stone()
         if move.get_figure().get_label() in ['w', 'b']:
             enemies = ['w', 'ww'] if move.get_figure().get_label() == 'b' else ['b', 'bb']
             close_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=1,
@@ -577,63 +578,17 @@ class Validator():
                             not isinstance(simulated_game_field[clo_r][clo_c], str) and
                             simulated_game_field[clo_r][clo_c].get_label() in enemies and
                             isinstance(simulated_game_field[fur_r][fur_c], str)):
-                        move.force_birth(further_sq)
+                        newchild = move.force_birth(further_sq)
+                        to_be_calculated.append(newchild)
 
-        # considering all cases for kings and queens
-        elif move.get_figure().get_label() in ['ww', 'bb']:
-            enemies = ['w', 'ww'] if move.get_figure().get_label() == 'b' else ['b', 'bb']
-            # close_vicinity = []
-            # temp_circle = self.get_circle(simulated_game_field, diameter=1)
-            # previous_sq = None
-            # for direction in temp_circle:
-            #     previous_sq = direction
-            #     for item in self.span([root_move.data[0], direction]):
-            #         if (simulated_game_field[previous_sq] in root_move.enemies and
-            #                 simulated_game_field[item] is None):
-            #             root_move.force_birth(further_sq)
-            #         previous_sq = item
+        # considering all cases for Lady()
+        #TODO:
 
-        # after first set of childern has been generated the algorithm can repeat itself recursively
-        for child in root_move.children:
-            temp_gamefield = copy.deepcopy(simulated_game_field)
-            self.move_execution(child.data, temp_gamefield)
-            self._simulation_subprocess(child, temp_gamefield)
+        # simulating the moves
+        # TODO:
 
-        for i in range(len(move) - 1):
-            # selected "friendly" figure transportation
-            game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]] = \
-            game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
-            game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]] = None
-
-            # possible uprank
-            contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                self.get_rowcol_from_sq_string(move[i + 1])[1]]
-            if contents_of_next_square.get_label() == 'b' and contents_of_next_square.get_position() in ['a1', 'c1',
-                                                                                                         'e1', 'g1']:
-                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
-                old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]]
-                new_lady = Lady().__dict__.update(old_stone.__dict__)
-                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
-
-            contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                self.get_rowcol_from_sq_string(move[i + 1])[1]]
-            if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8',
-                                                                                                         'f8', 'h8']:
-                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
-                old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]]
-                new_lady = Lady().__dict__.update(old_stone.__dict__)
-                game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                    self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
-
-            # "enemy" figure deletion
-            squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
-            for sq in squares_to_destroy:
-                game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
+        # repeating itself until new children were generated
+        # TODO:
 
     def move_execution(self, input_move, game_field):
         """
@@ -641,7 +596,7 @@ class Validator():
         Performs the move and changes game_field accordingly.
         Returns changed game_field on output.
         """
-        for move in input_move.find_all_possible_moves():
+        for move in get_moves(input_move):
 
             for i in range(len(move) - 1):
                 # selected "friendly" figure transportation
