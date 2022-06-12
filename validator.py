@@ -322,11 +322,13 @@ class Validator():
         else:
             is_white = False
         min_sq = 9
+        max_sq = 0
         for sq in circle:
             if int(sq[1]) < min_sq: min_sq = int(sq[1])
+            if int(sq[1]) > max_sq: max_sq = int(sq[1])
         sqs_to_remove = []
         for sq in circle:
-            if is_white and int(sq[1]) == min_sq:
+            if is_white and int(sq[1]) < max_sq:
                 sqs_to_remove.append(sq)
             elif not is_white and int(sq[1]) > min_sq:
                 sqs_to_remove.append(sq)
@@ -405,6 +407,8 @@ class Validator():
                             if cR and lU:  # and playing_field[(cR + lU)] not in figures_for_evaluation:
                                 moves.append([square, (cR + lU)])
 
+        print(f"all moves: {moves}")
+
         # removing simple moves that would jump over or step on teammate
         moves_to_delete = []
 
@@ -429,11 +433,12 @@ class Validator():
                     c_sq = tmpln_rowcol[1]
 
                     if isinstance(game_field[r_sq][c_sq], Figure):
-                        if (player_to_turn == PlayerColor.BLACK and game_field[r_sq][
-                            c_sq].get_label() in ['b', 'bb']) or (
-                                player_to_turn == PlayerColor.WHITE and game_field[r_sq][
-                            c_sq].get_label() in ['w', 'ww']):
-                            temp_occupied_sq_list.append(square)
+                        # if (player_to_turn == PlayerColor.BLACK and game_field[r_sq][
+                        #     c_sq].get_label() in ['b', 'bb']) or (
+                        #         player_to_turn == PlayerColor.WHITE and game_field[r_sq][
+                        #     c_sq].get_label() in ['w', 'ww']):
+                        #     temp_occupied_sq_list.append(square)
+                        temp_occupied_sq_list.append(square)
 
                 for temp_occupied_sq in temp_occupied_sq_list:
                     temp_squares_to_delete_for_this_move = [temp_occupied_sq]
@@ -445,11 +450,7 @@ class Validator():
                     for sq_to_delete in temp_squares_to_delete_for_this_move:
                         moves_to_delete.append([move[0], sq_to_delete])
 
-        for move in moves_to_delete:
-            try:
-                moves.remove(move)
-            except ValueError:
-                pass  # ignoring exceptions caused by trying to delete an item that is not in the list
+        print(f"simple: {moves}")
 
         # checking for jump moves
         jumping_moves = []
@@ -468,16 +469,12 @@ class Validator():
                 if (player_to_turn == PlayerColor.WHITE and game_field[r1][c1].get_label() in ['b', 'bb']) or (
                         player_to_turn == PlayerColor.BLACK and game_field[r1][c1].get_label() in ['w', 'ww']):
 
-                    jump_move = [move[0], ""]
-
                     if isinstance(game_field[r0][c0], Stone):
                         for sq in self.get_std_twin(game_field[r0][c0].get_position(), diameter=2,
                                                     color=(game_field[r0][c0].get_color())):
-                            jump_move[1] = sq
-                            direction = self.get_move_direction(jump_move)
-                            if direction == self.get_move_direction(move):
-                                jump_move[1] = sq
-                                jumping_moves.append(jump_move)
+                            direction = self.get_move_direction([move[0], sq])
+                            if direction == self.get_move_direction(move) and game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] is None:
+                                jumping_moves.append([move[0], sq])
 
                     elif isinstance(game_field[r0][c0], Lady):
                         pass
@@ -501,6 +498,13 @@ class Validator():
 
                     # if len(jump_move[1]) == 2:
                     #     jumping_moves.append(jump_move)
+
+        for move in moves_to_delete:
+            try:
+                moves.remove(move)
+            except ValueError:
+                pass  # ignoring exceptions caused by trying to delete an item that is not in the list
+
 
         # eliminating simple moves if any jumping moves are available
         if jumping_moves:
@@ -540,6 +544,7 @@ class Validator():
             obj_figure.moves_tree.add_move(obj_move)
 
         # control output
+        print(f"konec: {moves}")
         return control_output
 
     def jump_move_simulation(self, moves, game):
@@ -608,7 +613,7 @@ class Validator():
 
                     if (self.get_move_direction([move.get_data()[0], closer_sq]) == self.get_move_direction(
                             [move.get_data()[0], further_sq]) and
-                            not isinstance(simulated_game_field[clo_r][clo_c], str) and
+                            isinstance(simulated_game_field[clo_r][clo_c], Figure) and
                             simulated_game_field[clo_r][clo_c].get_label() in enemies and
                             isinstance(simulated_game_field[fur_r][fur_c], str)):
                         newchild = move.force_birth(further_sq)
@@ -655,11 +660,16 @@ class Validator():
             old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                 self.get_rowcol_from_sq_string(move[i + 1])[1]]
 
+            # transport figure to next square
             game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                 self.get_rowcol_from_sq_string(move[i + 1])[1]] = \
                 game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
-            game_field[self.get_rowcol_from_sq_string(move[i])[0]][
-                self.get_rowcol_from_sq_string(move[i])[1]] = None
+            
+            # set new position for figure
+            game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][self.get_rowcol_from_sq_string(move[i + 1])[1]].set_position(move[i + 1])
+
+            # delete figure reference from old square
+            game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]] = None
 
             # possible uprank
             contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
@@ -675,8 +685,8 @@ class Validator():
 
             contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                 self.get_rowcol_from_sq_string(move[i + 1])[1]]
-            print(contents_of_next_square.get_label())
-            print(contents_of_next_square.get_position())
+            # print(contents_of_next_square.get_label())
+            # print(contents_of_next_square.get_position())
             if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8',
                                                                                                             'f8',
                                                                                                             'h8']:
@@ -691,9 +701,9 @@ class Validator():
             for sq in squares_to_destroy:
                 game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
 
-        for row in game_field:
-            for col in row:
-                if col is not None:
-                    print(col.get_position())
+        # for row in game_field:
+        #     for col in row:
+        #         if col is not None:
+        #             print(col.get_position())
 
         return game_field

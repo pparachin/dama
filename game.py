@@ -8,7 +8,7 @@ from lady import Lady
 
 class Game:
 
-    def __init__(self, type_of_game, status, is_new_game=True):
+    def __init__(self, type_of_game, status, is_new_game=False): # prepsat is_new_game
         self._is_new_game = is_new_game
         self._type_of_game = type_of_game
         self.status = status

@@ -44,3 +44,6 @@ class Figure:
 
     def set_as_chosen_move_in_tree(self, input_move):
         self.moves_tree.set_chosen_move(input_move)
+
+    def __repr__(self):
+        return self._label

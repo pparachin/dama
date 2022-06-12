@@ -256,9 +256,6 @@ class GUI:
 
         while status:
 
-            if game.check_win(player_to_turn):
-                self.win(self._screen, player_to_turn, players)
-
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     status = False
@@ -268,6 +265,7 @@ class GUI:
                     col = int(location[0] // self._SQ_SIZE)
                     row = int(location[1] // self._SQ_SIZE)
                     valid_moves = validator.find_all_valid_moves(game, player_to_turn)
+                    # print(valid_moves)
 
                     status = self.buttons_click_check(location, players)
 
@@ -282,6 +280,12 @@ class GUI:
                             player_to_turn = game.next_turn()
                         player_clicks = []
                         selectedSQ = ()
+
+                    if game.check_win(player_to_turn):
+                        self.win(self._screen, (PlayerColor.BLACK if player_to_turn==PlayerColor.WHITE else PlayerColor.WHITE), players)
+
+                    # for row in game_field:
+                    #     print(row)
 
             self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players, player_to_turn)
             self._clock.tick(self._FPS)
