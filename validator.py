@@ -657,8 +657,8 @@ class Validator():
 
         for i in range(len(move) - 1):
             # selected "friendly" figure transportation
-            old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-                self.get_rowcol_from_sq_string(move[i + 1])[1]]
+            old_stone = game_field[self.get_rowcol_from_sq_string(move[i])[0]][
+                self.get_rowcol_from_sq_string(move[i])[1]]
 
             # transport figure to next square
             game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
@@ -679,7 +679,7 @@ class Validator():
                                                                                                             'g1']:
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
-                new_lady = Lady(old_stone.get_position(), old_stone.get_color(), old_stone.get_status(), old_stone.get_label()).__dict__.update(old_stone.__dict__)
+                new_lady = Lady(old_stone.get_position(), old_stone.get_color(), old_stone.get_status(), old_stone.get_label())
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 
@@ -692,7 +692,8 @@ class Validator():
                                                                                                             'h8']:
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
-                new_lady = Lady(old_stone.get_position(), old_stone.get_color(), old_stone.get_status(), old_stone.get_label()).__dict__.update(old_stone.__dict__)
+                new_lady = Lady(old_stone.get_position(), old_stone.get_color(), old_stone.get_status(), old_stone.get_label())
+
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 

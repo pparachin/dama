@@ -1,7 +1,5 @@
 from move_tree import *
 
-from alias import *
-
 
 class Figure:
 
@@ -26,6 +24,9 @@ class Figure:
 
     def get_position(self):
         return self._position
+
+    def get_status(self):
+        return self._status
 
     def get_color(self):
         return self._color
