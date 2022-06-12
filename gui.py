@@ -1,25 +1,17 @@
 import pygame as pg
-from figure import Figure
-from lady import Lady
-from stone import Stone
-from validator import Validator
 from alias import PlayerColor
-from alias import GameDirection
 
 
 class GUI:
 
+    # dimensions of a checkers board are 8x8
+
     def __init__(self, WIDTH, HEIGHT, DIMENSION, SQ_SIZE, images, FPS, WHITE, BLACK, RED, SWIDTH, board):
-        self._WIDTH = WIDTH
-        self._HEIGHT = HEIGHT
-        self._DIMENSION = DIMENSION  # dimensions of a checkers board are 8x8
-        self._SQ_SIZE = SQ_SIZE  # size of one square in the board
-        self._images = images
-        self._FPS = FPS
-        self._WHITE = WHITE
-        self._BLACK = BLACK
-        self._RED = RED
+        self._WIDTH, self._HEIGHT, self._DIMENSION = WIDTH, HEIGHT, DIMENSION
+        self._SQ_SIZE, self._images, self._FPS = SQ_SIZE, images, FPS  # size of one square in the board
+        self._WHITE, self._BLACK, self._RED = WHITE, BLACK, RED
         self._SWIDTH = SWIDTH  # width of the score board window
+        self._path_to_font = "data/FROSTBITE.ttf"
         pg.display.set_caption("CHECKERS by team PINK")  # title of the game
         self._board = board
         self._clock = pg.time.Clock()
@@ -27,6 +19,7 @@ class GUI:
         self._screen = pg.display.set_mode((self._WIDTH + self._SWIDTH, self._HEIGHT))
         self.load_images()
         self.menu_init(self._screen)
+        self._path_to_font = "data/FROSTBITE.ttf"
 
     def load_images(self):
         self._images["b"] = pg.image.load("data/b.png")  # loads image from the file
@@ -45,8 +38,9 @@ class GUI:
         self.draw_board(screen)  # draw squares on the board
         self.highlight_SQ(screen, validator, selectedSQ, board, valid_moves)  # highlights selected square
         self.draw_pieces(screen, self._board)  # draw pieces on the top of the squares
-        self.draw_score(screen, players[0].get_score(), players[1].get_score())  # draw players score on the right window
-        self.draw_notation(screen) # draw basic notation of the board
+        self.draw_score(screen, players[0].get_score(),
+                        players[1].get_score())  # draw players score on the right window
+        self.draw_notation(screen)  # draw basic notation of the board
 
     def draw_board(self, screen):
         screen.fill(self._BLACK)
@@ -68,7 +62,7 @@ class GUI:
         number_font = pg.font.Font("data/FROSTBITE.ttf", 25)
         x, y = 5, 705
         for col in range(self._DIMENSION):
-            notation = letter_font.render(chr(65+col), True, self._RED)
+            notation = letter_font.render(chr(65 + col), True, self._RED)
             screen.blit(notation, (x, 780))
             x += self._SQ_SIZE
 
@@ -76,7 +70,7 @@ class GUI:
             notation = number_font.render(str(row + 1), True, self._RED)
             screen.blit(notation, (5, y))
             y -= self._SQ_SIZE
-            
+
     def draw_score(self, screen, white_score, black_score):
         location = pg.mouse.get_pos()
         screen.blit(self._images["wood"], (self._WIDTH - 5, 1, self._SWIDTH, self._HEIGHT))
@@ -85,18 +79,21 @@ class GUI:
         player_font = pg.font.Font("data/FROSTBITE.ttf", 30)
 
         # Check if user is hovering over the button for quit game
-        quit_game = player_font.render("QUIT GAME", True, self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
-                                        and 749 <= location[1] <= 770 else self._RED)
+        quit_game = player_font.render("QUIT GAME", True,
+                                       self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                                      and 749 <= location[1] <= 770 else self._RED)
         screen.blit(quit_game, (self._WIDTH + 40, 750))
 
         # Check if user is hovering over the button for menu
-        return_to_menu = player_font.render("MENU", True, self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
-                                            and 699 <= location[1] <= 720 else self._RED)
+        return_to_menu = player_font.render("MENU", True,
+                                            self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
+                                                           and 699 <= location[1] <= 720 else self._RED)
         screen.blit(return_to_menu, (self._WIDTH + 70, 700))
 
         # Check if user is hovering over the button for save game
-        save_game = player_font.render("SAVE GAME", True, self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
-                                            and 649 <= location[1] <= 670 else self._RED)
+        save_game = player_font.render("SAVE GAME", True,
+                                       self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                                      and 649 <= location[1] <= 670 else self._RED)
         screen.blit(save_game, (self._WIDTH + 40, 650))
 
         score_font = pg.font.Font("data/FROSTBITE.ttf", 70)
@@ -108,18 +105,17 @@ class GUI:
                                                                                             (self._WIDTH + 150, 120))
 
     def menu_init(self, screen):
-        path_to_font = "data/FROSTBITE.ttf"
 
         screen.blit(self._images["home_screen"], (0, 0, self._WIDTH, self._HEIGHT))
         screen.blit(self._images["wood"], (self._WIDTH, 0, self._SWIDTH, self._HEIGHT))
         screen.blit(self._images["ww"], (200, 265))
         screen.blit(self._images["bb"], (330, 300))
 
-        head_line_font = pg.font.Font(path_to_font, 125)
+        head_line_font = pg.font.Font(self._path_to_font, 125)
         head_line = head_line_font.render("CHECKERS", True, self._RED)
         screen.blit(head_line, (15, 170))
 
-        credit_font = pg.font.Font(path_to_font, 50)
+        credit_font = pg.font.Font(self._path_to_font, 50)
         credit = credit_font.render("Created by team PINK", True, self._RED)
         screen.blit(credit, (100, 490))
 
@@ -130,7 +126,6 @@ class GUI:
         # Player vs Player
         screen.blit(self._images["bb_transformed"], (self._WIDTH + 42, 270))
         screen.blit(self._images["ww_transformed"], (self._WIDTH + 100, 300))
-
 
     def highlight_SQ(self, screen, validator, selectedSQ, board, valid_moves):
         if selectedSQ != () and selectedSQ[1] < 8:
@@ -164,13 +159,13 @@ class GUI:
             screen.blit(self._images["ww"], (330, 300))
             white_winner = winner_font.render("WHITE WINS", True, self._RED)
             screen.blit(white_winner, (15, 170))
-        
+
         else:
             screen.blit(self._images["bb"], (200, 265))
             screen.blit(self._images["ww"], (330, 300))
             draw = winner_font.render("A DRAW", True, self._RED)
             screen.blit(draw, (150, 170))
-        
+
         while win:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -190,15 +185,14 @@ class GUI:
                     # Check if user click on the button for return to menu
                     if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
                         pass
-            
+
             self.draw_score(self._screen, players[0].get_score(), players[1].get_score())
             pg.display.flip()
 
     def menu_run(self, status):
-        path_to_font = "data/FROSTBITE.ttf"
         screen = self._screen
-        player_font = pg.font.Font(path_to_font, 23)
-        menu_font = pg.font.Font(path_to_font, 30)
+        player_font = pg.font.Font(self._path_to_font, 23)
+        menu_font = pg.font.Font(self._path_to_font, 30)
 
         while status:
             location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
@@ -226,22 +220,25 @@ class GUI:
                     elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
                         status = False
 
-            
             # Text in MENU
-            one_player = player_font.render("Player vs PC", True, self._WHITE if self._WIDTH + 30 <= location[0] <= self._WIDTH + 215
-                                            and 45 <= location[1] <= 65 else self._RED)
+            one_player = player_font.render("Player vs PC", True,
+                                            self._WHITE if self._WIDTH + 30 <= location[0] <= self._WIDTH + 215
+                                                           and 45 <= location[1] <= 65 else self._RED)
             screen.blit(one_player, (self._WIDTH + 33, 50))
 
-            two_players = player_font.render("Player vs Player", True, self._WHITE if self._WIDTH + 7 <= location[0] <= self._WIDTH + 230
-                                            and 225 <= location[1] <= 245 else self._RED)
+            two_players = player_font.render("Player vs Player", True,
+                                             self._WHITE if self._WIDTH + 7 <= location[0] <= self._WIDTH + 230
+                                                            and 225 <= location[1] <= 245 else self._RED)
             screen.blit(two_players, (self._WIDTH + 8, 230))
 
-            load_game = menu_font.render("LOAD GAME", True, self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
-                                            and 699 <= location[1] <= 720 else self._RED)
+            load_game = menu_font.render("LOAD GAME", True,
+                                         self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                                        and 699 <= location[1] <= 720 else self._RED)
             screen.blit(load_game, (self._WIDTH + 40, 700))
 
-            quit_game = menu_font.render("QUIT GAME", True, self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
-                                            and 749 <= location[1] <= 770 else self._RED)
+            quit_game = menu_font.render("QUIT GAME", True,
+                                         self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                                        and 749 <= location[1] <= 770 else self._RED)
             screen.blit(quit_game, (self._WIDTH + 40, 750))
 
             self._clock.tick(self._FPS)
@@ -266,20 +263,10 @@ class GUI:
                     location = pg.mouse.get_pos()  # (x, y) position of mouse clicked
                     col = int(location[0] // self._SQ_SIZE)
                     row = int(location[1] // self._SQ_SIZE)
-                    #valid_moves = validator.find_all_valid_moves(
+                    # valid_moves = validator.find_all_valid_moves(
                     #    validator.translate_GUI_board_to_Validator_board(self._board), players[0].get_color())
 
-                    # Check if user click on the button for quit game
-                    if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
-                        status = False
-
-                    # Check if user click on the button for save game
-                    if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
-                        self.win(self._screen, PlayerColor.WHITE, players) # Zatím jen pro test win screenu
-
-                    # Check if user click on the button for return to menu
-                    if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
-                        pass
+                    status = self.buttons_click_check(location, players)
 
                     if selectedSQ == (row, col):  # selected square is the same as previous one
                         selectedSQ = ()  # deselect
@@ -295,3 +282,17 @@ class GUI:
             pg.display.flip()
 
         pg.quit()
+
+    def buttons_click_check(self, location, players):
+        # Check if user click on the button for quit game
+        if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
+            return False
+        # Check if user click on the button for save game
+        elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
+            self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
+            return True
+        # Check if user click on the button for return to menu
+        elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+            pass
+        else:
+            return True
