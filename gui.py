@@ -133,7 +133,7 @@ class GUI:
         if selectedSQ != () and selectedSQ[1] < 8:
             r = selectedSQ[0]
             c = selectedSQ[1]
-            if board[r][c] != "-":
+            if board[r][c] != None:
                 s = pg.Surface((self._SQ_SIZE, self._SQ_SIZE))
                 s.set_alpha(100)
                 s.fill(pg.Color("blue"))
@@ -278,6 +278,7 @@ class GUI:
                     if len(player_clicks) == 2:  # check if it was 2nd click
                         self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field)
                         player_clicks = []
+                        selectedSQ = ()
 
 
             self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players)
@@ -307,7 +308,7 @@ class GUI:
             c = selectedSQ[1]
             r2 = finalSQ[0]
             c2 = finalSQ[1]
-            if board[r][c] != "-":
+            if board[r][c] != None:
                 for move in valid_moves:
                     if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
                         moves.append(move[-1])
