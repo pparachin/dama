@@ -465,8 +465,8 @@ class Validator():
 
             # if there is enemy figure in vicinity
             if isinstance(game_field[r1][c1], Figure):
-                if (player_to_turn == PlayerColor.BLACK and game_field[r1][c1].get_label() in ['b', 'bb']) or (
-                        player_to_turn == PlayerColor.WHITE and game_field[r1][c1].get_label() in ['w', 'ww']):
+                if (player_to_turn == PlayerColor.WHITE and game_field[r1][c1].get_label() in ['b', 'bb']) or (
+                        player_to_turn == PlayerColor.BLACK and game_field[r1][c1].get_label() in ['w', 'ww']):
 
                     jump_move = [move[0], ""]
 
