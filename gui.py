@@ -264,7 +264,6 @@ class GUI:
                     col = int(location[0] // self._SQ_SIZE)
                     row = int(location[1] // self._SQ_SIZE)
                     valid_moves = validator.find_all_valid_moves(game, player_to_turn)
-                    #    validator.translate_GUI_board_to_Validator_board(self._board), players[0].get_color())
 
                     status = self.buttons_click_check(location, players)
 
@@ -275,7 +274,9 @@ class GUI:
                         selectedSQ = (row, col)
                         player_clicks.append(selectedSQ)
                     if len(player_clicks) == 2:  # check if it was 2nd click
-                        pass
+                        self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field)
+                        player_clicks = []
+
 
             self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players)
             self._clock.tick(self._FPS)
@@ -296,3 +297,18 @@ class GUI:
             pass
         else:
             return True
+
+    def check_move(self, validator, valid_moves, selectedSQ, finalSQ, board):
+        moves = [] # moves possible for selected piece
+        if (selectedSQ != () and selectedSQ[1] < 8) and (finalSQ != () and finalSQ[1] < 8):
+            r = selectedSQ[0]
+            c = selectedSQ[1]
+            r2 = finalSQ[0]
+            c2 = finalSQ[1]
+            if board[r][c] != "-":
+                for move in valid_moves:
+                    if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
+                        moves.append(move[-1])
+                if validator.get_sq_string_from_2D_board(r2, c2) in moves:
+                    #print pro test -> potřeba nahradit funkcí execute_move
+                    print(f"piece moved from {validator.get_sq_string_from_2D_board(r, c)} to {validator.get_sq_string_from_2D_board(r2, c2)}") 
