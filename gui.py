@@ -54,7 +54,7 @@ class GUI:
         for row in range(self._DIMENSION):
             for col in range(self._DIMENSION):
                 piece = board[row][col]
-                #if piece != "-":
+                # if piece != "-":
                 if isinstance(piece, Figure):
                     screen.blit(self._images[piece.get_label() + "_transformed"],
                                 (col * self._SQ_SIZE, row * self._SQ_SIZE, self._SQ_SIZE, self._SQ_SIZE))
@@ -276,8 +276,8 @@ class GUI:
                         selectedSQ = (row, col)
                         player_clicks.append(selectedSQ)
                     if len(player_clicks) == 2:  # check if it was 2nd click
-                        if self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field) == True:
-                            player_to_turn = game.next_turn()
+                        self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field, game)
+                            #player_to_turn = game.next_turn()
                         player_clicks = []
                         selectedSQ = ()
 
@@ -301,8 +301,8 @@ class GUI:
         else:
             return True
 
-    def check_move(self, validator, valid_moves, selectedSQ, finalSQ, board):
-        moves = [] # moves possible for selected piece
+    def check_move(self, validator, valid_moves, selectedSQ, finalSQ, board, game):
+        moves = []  # moves possible for selected piece
         if (selectedSQ != () and selectedSQ[1] < 8) and (finalSQ != () and finalSQ[1] < 8):
             r = selectedSQ[0]
             c = selectedSQ[1]
@@ -313,7 +313,8 @@ class GUI:
                     if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
                         moves.append(move[-1])
                 if validator.get_sq_string_from_2D_board(r2, c2) in moves:
-                    #print pro test -> potřeba nahradit funkcí execute_move
-                    validator.move_execution([validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)], board)
-                    return True
-
+                    # print pro test -> potřeba nahradit funkcí execute_move
+                    game_field = validator.move_execution(
+                        [validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)],
+                        board)
+                    return game_field

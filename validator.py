@@ -669,18 +669,20 @@ class Validator():
                                                                                                             'g1']:
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('bb')
-                new_lady = Lady().__dict__.update(old_stone.__dict__)
+                new_lady = Lady(old_stone.get_position(), old_stone.get_color(), old_stone.get_status(), old_stone.get_label()).__dict__.update(old_stone.__dict__)
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 
             contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                 self.get_rowcol_from_sq_string(move[i + 1])[1]]
+            print(contents_of_next_square.get_label())
+            print(contents_of_next_square.get_position())
             if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8',
                                                                                                             'f8',
                                                                                                             'h8']:
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]].set_label('ww')
-                new_lady = Lady().__dict__.update(old_stone.__dict__)
+                new_lady = Lady(old_stone.get_position(), old_stone.get_color(), old_stone.get_status(), old_stone.get_label()).__dict__.update(old_stone.__dict__)
                 game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                     self.get_rowcol_from_sq_string(move[i + 1])[1]] = new_lady
 
@@ -688,3 +690,10 @@ class Validator():
             squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
             for sq in squares_to_destroy:
                 game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
+
+        for row in game_field:
+            for col in row:
+                if col is not None:
+                    print(col.get_position())
+
+        return game_field
