@@ -641,7 +641,7 @@ class Validator():
                     self.get_rowcol_from_sq_string(move[i + 1])[1]] = \
                     game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
 
-    def move_execution(self, input_move, game_field, player_to_turn, players):
+    def move_execution(self, input_move, game_field):
         """
         Takes game_field dictionary and move on input.
         Performs the move and changes game_field accordingly.
@@ -688,7 +688,3 @@ class Validator():
             squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
             for sq in squares_to_destroy:
                 game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
-                if player_to_turn == players[0].get_color():
-                    players[0].set_score(players[0].get_score() + 1)
-                else:
-                    players[1].set_score(players[1].get_score() + 1)
