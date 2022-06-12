@@ -1,6 +1,7 @@
 import pygame as pg
 from alias import PlayerColor
 from figure import Figure
+from stone import Stone
 
 
 class GUI:
@@ -35,9 +36,9 @@ class GUI:
         self._images["wood"] = pg.image.load("data/wood.png")
         self._images["home_screen"] = pg.image.load("data/home_screen.png")
 
-    def draw_game_state(self, screen, validator, selectedSQ, board, valid_moves, players):
+    def draw_game_state(self, screen, validator, selectedSQ, board, valid_moves, players, player_to_turn):
         self.draw_board(screen)  # draw squares on the board
-        self.highlight_SQ(screen, validator, selectedSQ, board, valid_moves)  # highlights selected square
+        self.highlight_SQ(screen, validator, selectedSQ, board, valid_moves, player_to_turn)  # highlights selected square
         self.draw_pieces(screen, self._board)  # draw pieces on the top of the squares
         self.draw_score(screen, players[0].get_score(),
                         players[1].get_score())  # draw players score on the right window
@@ -129,21 +130,22 @@ class GUI:
         screen.blit(self._images["bb_transformed"], (self._WIDTH + 42, 270))
         screen.blit(self._images["ww_transformed"], (self._WIDTH + 100, 300))
 
-    def highlight_SQ(self, screen, validator, selectedSQ, board, valid_moves):
+    def highlight_SQ(self, screen, validator, selectedSQ, board, valid_moves, player_to_turn):
         if selectedSQ != () and selectedSQ[1] < 8:
             r = selectedSQ[0]
             c = selectedSQ[1]
             if board[r][c] != None:
-                s = pg.Surface((self._SQ_SIZE, self._SQ_SIZE))
-                s.set_alpha(100)
-                s.fill(pg.Color("blue"))
-                screen.blit(s, (self._SQ_SIZE * c, self._SQ_SIZE * r))
+                if Stone.get_label(board[r][c])[0] == ("w" if player_to_turn == PlayerColor.WHITE else "b"):
+                    s = pg.Surface((self._SQ_SIZE, self._SQ_SIZE))
+                    s.set_alpha(100)
+                    s.fill(pg.Color("blue"))
+                    screen.blit(s, (self._SQ_SIZE * c, self._SQ_SIZE * r))
 
-                s.fill(pg.Color("yellow"))
-                for move in valid_moves:
-                    if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
-                        screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[-1],
-                                        self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[0]))
+                    s.fill(pg.Color("yellow"))
+                    for move in valid_moves:
+                        if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
+                            screen.blit(s, (self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[-1],
+                                            self._SQ_SIZE * validator.get_rowcol_from_sq_string(move[-1])[0]))
 
     def win(self, screen, winner, players):
         win = True
@@ -281,7 +283,7 @@ class GUI:
                         player_clicks = []
                         selectedSQ = ()
 
-            self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players)
+            self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players, player_to_turn)
             self._clock.tick(self._FPS)
             pg.display.flip()
 

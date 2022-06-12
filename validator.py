@@ -85,7 +85,7 @@ class Validator():
     def game_field_to2D(self, field):
         board = []
         for dimension in range(8):
-            board.append([None, None, None, None, None, None, None, None, ])
+            board.append([None, None, None, None, None, None, None, None])
 
         for sq in range(len(field)):
             row = self.get_rowcol_from_sq_string(list(field.keys())[sq])[0]
