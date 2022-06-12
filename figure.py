@@ -1,4 +1,4 @@
-from move_tree import MovesTree
+from move_tree import *
 
 from alias import *
 
@@ -16,6 +16,10 @@ class Figure:
         self._status = status
         self._label = label
         self.moves_tree = MovesTree()
+
+        initial_move = Move([self._position, self._position], self)
+        self.moves_tree.set_root_move(initial_move)
+        self.moves_tree.set_chosen_move(initial_move)
 
     def show(self):
         print(f"{self._position} {self._color} {self._status} {self._label}")

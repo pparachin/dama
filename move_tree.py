@@ -11,19 +11,19 @@ class MovesTree:
         return self.root
 
     def add_move(self, move):
-        if self.chosen_move is None:
-            temp_move = self.root
-            can_continue = True
-            while can_continue:
-                for child in temp_move.children:
-                    if child.children:
-                        can_continue = True
-                        temp_move = child
-                        continue
-                can_continue = False
-            temp_move.children.append(move)
-        else:
-            self.chosen_move
+        # if self.root is None:
+        #     self.root        
+        if self.chosen_move is None and move not in self.root.children:
+            self.root.add_child(move)
+        elif move not in self.chosen_move.children:
+            self.chosen_move.add_child(move)
+        
+    def set_chosen_move(self, input_move):
+        for child in self.root.children:
+            if child is input_move:
+                self.chosen_move = child
+            else:
+                self.chosen_move = child.look_for_chosen_move(input_move)
 
 class Move:
 
@@ -33,6 +33,14 @@ class Move:
         self.board_state = input_board  # This attrib is here only for simulating trees further (AI, jump_moves)
         self.figure = input_figure
         self.parent = None
+
+    def look_for_chosen_move(self, pattern):
+        for child in self.children:
+            if child is pattern:
+                return child
+            else:
+                return child.look_for_choosen_move(pattern)
+        return None
 
     def add_step(self, position):
         self.data.append(position)
@@ -52,6 +60,11 @@ class Move:
             return
         self.parent = parent
         parent.add_child(self)
+
+    def add_child(self, move):
+        if move not in self.children:
+            self.children.append(move)
+            move.set_parent(self)
 
     def force_birth(self, position):
         offspring = Move([self.data[-1], position], self.figure, self.board_state)
