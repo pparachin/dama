@@ -25,6 +25,16 @@ class MovesTree:
             else:
                 self.chosen_move = child.look_for_chosen_move(input_move)
 
+    def get_move_by_data(self, input_data):
+        if self.root.data == input_data:
+            return self.root
+        else:
+            for child in self.root.children:
+                if child.data == input_data:
+                    return child
+                else:
+                    return child.get_move_by_data(input_data)
+
 class Move:
 
     def __init__(self, input_list_of_squares, input_figure, input_board=None):
@@ -41,6 +51,16 @@ class Move:
             else:
                 return child.look_for_choosen_move(pattern)
         return None
+
+    def get_move_by_data(self, input_data):
+        if self.data == input_data:
+            return self
+        else:
+            for child in self.children:
+                if child.data == input_data:
+                    return child
+                else:
+                    return child.get_move_by_data(input_data)
 
     def add_step(self, position):
         self.data.append(position)

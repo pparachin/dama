@@ -35,3 +35,9 @@ class Figure:
 
     def set_label(self, newlabel):
         self._label = newlabel
+
+    def get_move_by_data(self, input_move):
+        return self.moves_tree.get_move_by_data(input_move)
+
+    def set_as_chosen_move_in_tree(self, input_move):
+        self.moves_tree.set_chosen_move(input_move)
