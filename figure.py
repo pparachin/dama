@@ -27,6 +27,9 @@ class Figure:
     def get_position(self):
         return self._position
 
+    def get_color(self):
+        return self._color
+
     def get_label(self):
         return self._label
 

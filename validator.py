@@ -15,8 +15,10 @@ class Validator():
 
     @staticmethod
     def check_valid_board(game_file_path):
-        invalid_squares = ["a2", "a4", "a6", "a8", "b1", "b3", "b5", "b7", "c2", "c4", "c6", "c8", "d1", "d3", "d5", "d7",
-                            "e2", "e4", "e6", "e8", "f1", "f3", "f5", "f7", "g2", "g4", "g6", "g8", "h1", "h3", "h5", "h7"]
+        invalid_squares = ["a2", "a4", "a6", "a8", "b1", "b3", "b5", "b7", "c2", "c4", "c6", "c8", "d1", "d3", "d5",
+                           "d7",
+                           "e2", "e4", "e6", "e8", "f1", "f3", "f5", "f7", "g2", "g4", "g6", "g8", "h1", "h3", "h5",
+                           "h7"]
         squares_checked = []
 
         try:
@@ -389,13 +391,13 @@ class Validator():
                             lU = str(lU)
 
                         # appending moves considering game direction (which player started up)
-                        if game.get_player_to_turn == PlayerColor.BLACK or (len(figure) > 1):
+                        if player_to_turn == PlayerColor.BLACK or (len(figure) > 1):
                             if cL and lD:  # and playing_field[(cL + lD)] not in figures_for_evaluation:
                                 moves.append([square, (cL + lD)])
                             if cR and lD:  # and playing_field[(cR + lD)] not in figures_for_evaluation:
                                 moves.append([square, (cR + lD)])
 
-                        if game.get_player_to_turn == PlayerColor.WHITE or (len(figure) > 1):
+                        if player_to_turn == PlayerColor.WHITE or (len(figure) > 1):
                             if cL and lU:  # and playing_field[(cL + lU)] not in figures_for_evaluation:
                                 moves.append([square, (cL + lU)])
                             if cR and lU:  # and playing_field[(cR + lU)] not in figures_for_evaluation:
@@ -410,9 +412,9 @@ class Validator():
             r0 = rowcol0[0]
             c0 = rowcol0[1]
 
-            if (game.get_player_to_turn == PlayerColor.BLACK and game_field[r0][c0].get_label() in ['b', 'bb']) \
-                    or (game.get_player_to_turn == PlayerColor.WHITE and game_field[r0][c0].get_label() in ['w',
-                                                                                                            'ww']):
+            if (player_to_turn == PlayerColor.BLACK and game_field[r0][c0].get_label() in ['b', 'bb']) \
+                    or (player_to_turn == PlayerColor.WHITE and game_field[r0][c0].get_label() in ['w',
+                                                                                                   'ww']):
                 temp_line = self.span(move)
                 temp_direction = self.get_move_direction(move)
                 temp_occupied_sq_list = []
@@ -424,9 +426,9 @@ class Validator():
                     c_sq = tmpln_rowcol[1]
 
                     if not isinstance(game_field[r_sq][c_sq], str):
-                        if (game.get_player_to_turn == PlayerColor.BLACK and game_field[r_sq][
+                        if (player_to_turn == PlayerColor.BLACK and game_field[r_sq][
                             c_sq].get_label() in ['b', 'bb']) or (
-                                game.get_player_to_turn == PlayerColor.WHITE and game_field[r_sq][
+                                player_to_turn == PlayerColor.WHITE and game_field[r_sq][
                             c_sq].get_label() in ['w', 'ww']):
                             temp_occupied_sq_list.append(square)
 
@@ -460,21 +462,23 @@ class Validator():
 
             # if there is enemy figure in vicinity
             if not isinstance(game_field[r1][c1], str):
-                if (game.get_player_to_turn == PlayerColor.BLACK and game_field[r1][c1].get_label() in ['b','bb']) or (game.get_player_to_turn == PlayerColor.WHITE and game_field[r1][c1].get_label() in ['w', 'ww']):
+                if (player_to_turn == PlayerColor.BLACK and game_field[r1][c1].get_label() in ['b', 'bb']) or (
+                        player_to_turn == PlayerColor.WHITE and game_field[r1][c1].get_label() in ['w', 'ww']):
 
                     jump_move = [move[0], ""]
 
                     if isinstance(game_field[r0][c0], Stone):
-                        for sq in self.get_std_twin(game_field[r0][c0].get_position(), diameter=2, color=(game_field[r0][c0].get_color())):
+                        for sq in self.get_std_twin(game_field[r0][c0].get_position(), diameter=2,
+                                                    color=(game_field[r0][c0].get_color())):
+                            jump_move[1] = sq
+                            direction = self.get_move_direction(jump_move)
+                            if direction == self.get_move_direction(move):
                                 jump_move[1] = sq
-                                direction = self.get_move_direction(jump_move)
-                                if direction == self.get_move_direction(move): 
-                                    jump_move[1] = sq
-                                    jumping_moves.append(jump_move)
-                    
+                                jumping_moves.append(jump_move)
+
                     elif isinstance(game_field[r0][c0], Lady):
                         pass
-                        #TODO:
+                        # TODO:
 
                     # if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
                     #     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
@@ -483,12 +487,12 @@ class Validator():
 
                     # if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
                     #         (int(move[1][1]) - 1) >= 1) and (
-                    #         game.get_player_to_turn == PlayerColor.BLACK or game_field[r0][c0].get_label() in [
+                    #         player_to_turn == PlayerColor.BLACK or game_field[r0][c0].get_label() in [
                     #     'bb', 'ww']):
                     #     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
                     # elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
                     #         (int(move[1][1]) + 1) >= 1) and (
-                    #         game.get_player_to_turn == PlayerColor.WHITE or game_field[r0][c0].get_label() in [
+                    #         player_to_turn == PlayerColor.WHITE or game_field[r0][c0].get_label() in [
                     #     'bb', 'ww']):
                     #     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
 
@@ -532,6 +536,8 @@ class Validator():
             obj_figure = obj_move.get_figure()
             obj_figure.moves_tree.add_move(obj_move)
 
+        print(control_output)
+
         # control output
         return control_output
 
@@ -545,7 +551,7 @@ class Validator():
         simulated_move_trees = []
         output = []
 
-        # 1) transfering lists of strings into Move objects 
+        # 1) transfering lists of strings into Move objects
         for move in moves:
             # copying playing field so we avoid editing actual game and are just simulating what could happen
             simulated_game_field = copy.deepcopy(game.game_field)
