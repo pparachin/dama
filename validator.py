@@ -475,29 +475,80 @@ class Validator():
                             direction = self.get_move_direction([move[0], sq])
                             if direction == self.get_move_direction(move) and game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] is None:
                                 jumping_moves.append([move[0], sq])
+                        
+            if isinstance(game_field[r0][c0], Lady) and game_field[r1][c1] is None:
+                stone_count = 0
+                test = self.find_inbetween_coords(move[0], move[1])
+                for square in self.find_inbetween_coords(move[0], move[1]):
+                    if isinstance(game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]], Figure) and \
+                    ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['b', 'bb']) or
+                    (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['w', 'ww'])):
+                        stone_count += 1
 
-                    elif isinstance(game_field[r0][c0], Lady):
-                        pass
-                        # TODO:
+                    elif isinstance(game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]], Figure) and \
+                    ((player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['b', 'bb']) or
+                    (player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['w', 'ww'])):
+                        stone_count = 0
+                        break
+            
+                if stone_count == 1:
+                    jumping_moves.append(move)
 
-                    # if (ord(move[0][0]) > ord(move[1][0])) and (chr(ord(move[1][0]) - 1) in letters):
-                    #     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) - 1))
-                    # elif (ord(move[0][0]) < ord(move[1][0])) and (chr(ord(move[1][0]) + 1) in letters):
-                    #     jump_move[1] = jump_move[1] + str(chr(ord(move[1][0]) + 1))
 
-                    # if (int(move[0][1]) > int(move[1][1])) and ((int(move[1][1]) - 1) <= 8) and (
-                    #         (int(move[1][1]) - 1) >= 1) and (
-                    #         player_to_turn == PlayerColor.BLACK or game_field[r0][c0].get_label() in [
-                    #     'bb', 'ww']):
-                    #     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
-                    # elif (int(move[0][1]) < int(move[1][1])) and ((int(move[1][1]) + 1) <= 8) and (
-                    #         (int(move[1][1]) + 1) >= 1) and (
-                    #         player_to_turn == PlayerColor.WHITE or game_field[r0][c0].get_label() in [
-                    #     'bb', 'ww']):
-                    #     jump_move[1] = jump_move[1] + str(int(move[1][1]) + 1)
+                        # # 1) until field border generate double circles
+                        # # first square enemy
+                        # # second square free
+                        # i = 1
+                        # twins_of_interest = []
+                        # potential = []
+                        # delete_patterns = []
+                        # while self.get_circle(game_field[r0][c0].get_position(), diameter=i) is not None and self.get_circle(game_field[r0][c0].get_position(), diameter=(i + 1)) is not None and (i <= 8):
+                        #     for closer in self.get_circle(game_field[r0][c0].get_position(), diameter=i):
+                        #         for further in self.get_circle(game_field[r0][c0].get_position(), diameter=(i+1)):
+                        #             twins_of_interest.append((closer, further))
+                        #     i += 1
 
-                    # if len(jump_move[1]) == 2:
-                    #     jumping_moves.append(jump_move)
+                        # # 2) if there is friend figure or double enemy, stop expanding diameter
+                        # for twin in twins_of_interest:
+                        #     if isinstance(game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]], Figure) and \
+                        #         ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['b', 'bb']) or
+                        #         (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['w', 'ww'])) and \
+                        #         game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]] is None:
+                                
+                        #         potential.append((closer, further))
+                        #         # dej do potencialnich tahu na pruzkum
+                        #     elif (isinstance(game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]], Figure) and \
+                        #         ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['b', 'bb']) or
+                        #         (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['w', 'ww'])) and \
+                        #         isinstance(game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]], Figure) and \
+                        #         ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['b', 'bb']) or
+                        #         (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['w', 'ww']))) or \
+                        #         (isinstance(game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]], Figure) and \
+                        #         ((player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['b', 'bb']) or
+                        #         (player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['w', 'ww'])) or \
+                        #         isinstance(game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]], Figure) and \
+                        #         ((player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['b', 'bb']) or
+                        #         (player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['w', 'ww']))):
+                        #         # kdyz 2 nepratelske, nebo jedna pratelska za sebou, tak z toho vyberu odstran vzdalenejsi pole
+                                
+                        #         delete_patterns.append((closer, further))
+
+                        # # 3) delete from potential all twins that are further away from figure than pattern
+                        # for pattern in delete_patterns:
+                        #     for twin in potential:
+                        #         if self.get_move_direction(pattern) == self.get_move_direction(twin) and \
+                        #             len(self.find_inbetween_coords(move[0], pattern[0])) <= len(self.find_inbetween_coords(move[0], potential[0])):
+
+                        #             try:
+                        #                 potential.remove(potential)
+                        #             except ValueError:
+                        #                 pass # ignore not in list problem
+
+                        # # 4) find moves which end with unoccupied square
+                        # for twin in potential:
+                        #     for move in moves:
+                        #         if move[1] == twin[1]:
+                        #             jumping_moves.append(move)
 
         for move in moves_to_delete:
             try:
