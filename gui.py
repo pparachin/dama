@@ -276,7 +276,7 @@ class GUI:
                         selectedSQ = (row, col)
                         player_clicks.append(selectedSQ)
                     if len(player_clicks) == 2:  # check if it was 2nd click
-                        if self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field, game) == True:
+                        if self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field, game, player_to_turn, players) == True:
                             player_to_turn = game.next_turn()
                         player_clicks = []
                         selectedSQ = ()
@@ -307,7 +307,7 @@ class GUI:
         else:
             return True
 
-    def check_move(self, validator, valid_moves, selectedSQ, finalSQ, board, game):
+    def check_move(self, validator, valid_moves, selectedSQ, finalSQ, board, game, player_to_turn, players):
         moves = []  # moves possible for selected piece
         if (selectedSQ != () and selectedSQ[1] < 8) and (finalSQ != () and finalSQ[1] < 8):
             r = selectedSQ[0]
@@ -322,5 +322,5 @@ class GUI:
                     # print pro test -> potřeba nahradit funkcí execute_move
                     validator.move_execution(
                         [validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)],
-                        board)
+                        board, player_to_turn, players)
                     return True
