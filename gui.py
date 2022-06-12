@@ -276,10 +276,10 @@ class GUI:
                         selectedSQ = (row, col)
                         player_clicks.append(selectedSQ)
                     if len(player_clicks) == 2:  # check if it was 2nd click
-                        self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field)
+                        if self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field) == True:
+                            player_to_turn = game.next_turn()
                         player_clicks = []
                         selectedSQ = ()
-
 
             self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players)
             self._clock.tick(self._FPS)
@@ -314,5 +314,6 @@ class GUI:
                         moves.append(move[-1])
                 if validator.get_sq_string_from_2D_board(r2, c2) in moves:
                     #print pro test -> potřeba nahradit funkcí execute_move
-                    print(f"piece moved from {validator.get_sq_string_from_2D_board(r, c)} to {validator.get_sq_string_from_2D_board(r2, c2)}") 
                     validator.move_execution([validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)], board)
+                    return True
+
