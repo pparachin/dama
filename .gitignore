@@ -7,3 +7,4 @@ __pycache__/player.cpython-310.pyc
 __pycache__/stone.cpython-310.pyc
 __pycache__/validator.cpython-310.pyc
 __pycache__/lady.cpython-310.pyc
+tests.py
