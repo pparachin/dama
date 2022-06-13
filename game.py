@@ -1,3 +1,4 @@
+from random import randint
 from player import Player
 from alias import PlayerColor, PlayerType, StoneColor
 from gui import GUI
@@ -90,6 +91,13 @@ class Game:
         else:
             return False
 
+    def AI_move(self, validator, game, player_to_turn):
+        possible_moves = validator.find_all_valid_moves(game, player_to_turn)
+        max_num = len(possible_moves) - 1
+        rnd = randint(0, max_num)
+        validator.move_execution([possible_moves[rnd][0], possible_moves[rnd][-1]], game.get_game_field(), player_to_turn, game.get_players())
+        return True
+
     # Getters
 
     def get_players(self):
@@ -104,3 +112,5 @@ class Game:
     def get_game_field(self):
         return self.game_field
 
+    def get_game_type(self):
+        return self._type_of_game

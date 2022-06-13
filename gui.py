@@ -256,6 +256,10 @@ class GUI:
 
         while status:
 
+            if game.get_game_type() == 0 and player_to_turn == players[1].get_color():
+                if game.AI_move(validator, game, player_to_turn) == True:
+                    player_to_turn = game.next_turn()
+
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     status = False
