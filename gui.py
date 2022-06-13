@@ -88,16 +88,16 @@ class GUI:
         screen.blit(quit_game, (self._WIDTH + 40, 750))
 
         # Check if user is hovering over the button for menu
-        return_to_menu = player_font.render("MENU", True,
-                                            self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
-                                                           and 699 <= location[1] <= 720 else self._RED)
-        screen.blit(return_to_menu, (self._WIDTH + 70, 700))
+        # return_to_menu = player_font.render("MENU", True,
+        #                                    self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
+        #                                                   and 699 <= location[1] <= 720 else self._RED)
+        # screen.blit(return_to_menu, (self._WIDTH + 70, 700))
 
         # Check if user is hovering over the button for save game
-        save_game = player_font.render("SAVE GAME", True,
-                                       self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
-                                                      and 649 <= location[1] <= 670 else self._RED)
-        screen.blit(save_game, (self._WIDTH + 40, 650))
+        # save_game = player_font.render("SAVE GAME", True,
+        #                               self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+        #                                              and 649 <= location[1] <= 670 else self._RED)
+        # screen.blit(save_game, (self._WIDTH + 40, 650))
 
         score_font = pg.font.Font("data/FROSTBITE.ttf", 70)
         w_score = score_font.render("{%d}" % int(white_score), True, self._WHITE)
@@ -302,12 +302,12 @@ class GUI:
         if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
             return False
         # Check if user click on the button for save game
-        elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
-            self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
-            return True
+        # elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
+            # self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
+            # return True
         # Check if user click on the button for return to menu
-        elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
-            pass
+        # elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+            # pass
         else:
             return True
 
