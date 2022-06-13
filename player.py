@@ -1,7 +1,3 @@
-from alias import PlayerColor
-from alias import GameDirection
-
-
 class Player:
 
     def __init__(self, color, typ, score):

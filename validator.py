@@ -407,7 +407,6 @@ class Validator():
                             if cR and lU:  # and playing_field[(cR + lU)] not in figures_for_evaluation:
                                 moves.append([square, (cR + lU)])
 
-        print(f"all moves: {moves}")
 
         # removing simple moves that would jump over or step on teammate
         moves_to_delete = []
@@ -450,7 +449,6 @@ class Validator():
                     for sq_to_delete in temp_squares_to_delete_for_this_move:
                         moves_to_delete.append([move[0], sq_to_delete])
 
-        print(f"simple: {moves}")
 
         # checking for jump moves
         jumping_moves = []
@@ -478,7 +476,6 @@ class Validator():
                         
             if isinstance(game_field[r0][c0], Lady) and game_field[r1][c1] is None:
                 stone_count = 0
-                test = self.find_inbetween_coords(move[0], move[1])
                 for square in self.find_inbetween_coords(move[0], move[1]):
                     if isinstance(game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]], Figure) and \
                     ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['b', 'bb']) or
@@ -493,62 +490,6 @@ class Validator():
             
                 if stone_count == 1:
                     jumping_moves.append(move)
-
-
-                        # # 1) until field border generate double circles
-                        # # first square enemy
-                        # # second square free
-                        # i = 1
-                        # twins_of_interest = []
-                        # potential = []
-                        # delete_patterns = []
-                        # while self.get_circle(game_field[r0][c0].get_position(), diameter=i) is not None and self.get_circle(game_field[r0][c0].get_position(), diameter=(i + 1)) is not None and (i <= 8):
-                        #     for closer in self.get_circle(game_field[r0][c0].get_position(), diameter=i):
-                        #         for further in self.get_circle(game_field[r0][c0].get_position(), diameter=(i+1)):
-                        #             twins_of_interest.append((closer, further))
-                        #     i += 1
-
-                        # # 2) if there is friend figure or double enemy, stop expanding diameter
-                        # for twin in twins_of_interest:
-                        #     if isinstance(game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]], Figure) and \
-                        #         ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['b', 'bb']) or
-                        #         (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['w', 'ww'])) and \
-                        #         game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]] is None:
-                                
-                        #         potential.append((closer, further))
-                        #         # dej do potencialnich tahu na pruzkum
-                        #     elif (isinstance(game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]], Figure) and \
-                        #         ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['b', 'bb']) or
-                        #         (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['w', 'ww'])) and \
-                        #         isinstance(game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]], Figure) and \
-                        #         ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['b', 'bb']) or
-                        #         (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['w', 'ww']))) or \
-                        #         (isinstance(game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]], Figure) and \
-                        #         ((player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['b', 'bb']) or
-                        #         (player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(closer)[0]][self.get_rowcol_from_sq_string(closer)[1]].get_label() in ['w', 'ww'])) or \
-                        #         isinstance(game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]], Figure) and \
-                        #         ((player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['b', 'bb']) or
-                        #         (player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(further)[0]][self.get_rowcol_from_sq_string(further)[1]].get_label() in ['w', 'ww']))):
-                        #         # kdyz 2 nepratelske, nebo jedna pratelska za sebou, tak z toho vyberu odstran vzdalenejsi pole
-                                
-                        #         delete_patterns.append((closer, further))
-
-                        # # 3) delete from potential all twins that are further away from figure than pattern
-                        # for pattern in delete_patterns:
-                        #     for twin in potential:
-                        #         if self.get_move_direction(pattern) == self.get_move_direction(twin) and \
-                        #             len(self.find_inbetween_coords(move[0], pattern[0])) <= len(self.find_inbetween_coords(move[0], potential[0])):
-
-                        #             try:
-                        #                 potential.remove(potential)
-                        #             except ValueError:
-                        #                 pass # ignore not in list problem
-
-                        # # 4) find moves which end with unoccupied square
-                        # for twin in potential:
-                        #     for move in moves:
-                        #         if move[1] == twin[1]:
-                        #             jumping_moves.append(move)
 
         for move in moves_to_delete:
             try:
@@ -595,7 +536,6 @@ class Validator():
             obj_figure.moves_tree.add_move(obj_move)
 
         # control output
-        print(f"konec: {moves}")
         return control_output
 
     def jump_move_simulation(self, moves, game):
@@ -703,7 +643,6 @@ class Validator():
         Performs the move and changes game_field accordingly.
         Returns changed game_field on output.
         """
-        #for move in get_moves(input_move):
         move = input_move
 
         for i in range(len(move) - 1):
@@ -736,8 +675,6 @@ class Validator():
 
             contents_of_next_square = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
                 self.get_rowcol_from_sq_string(move[i + 1])[1]]
-            # print(contents_of_next_square.get_label())
-            # print(contents_of_next_square.get_position())
             if contents_of_next_square.get_label() == 'w' and contents_of_next_square.get_position() in ['b8', 'd8',
                                                                                                             'f8',
                                                                                                             'h8']:
@@ -750,16 +687,14 @@ class Validator():
 
             # "enemy" figure deletion
             squares_to_destroy = self.find_inbetween_coords(move[i], move[i + 1])
-            for sq in squares_to_destroy:
-                game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
+
+            if squares_to_destroy:
                 if player_to_turn == players[0].get_color():
                     players[0].set_score(players[0].get_score() + 1)
                 else:
                     players[1].set_score(players[1].get_score() + 1)
 
-        # for row in game_field:
-        #     for col in row:
-        #         if col is not None:
-        #             print(col.get_position())
+            for sq in squares_to_destroy:
+                game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
 
         return game_field
