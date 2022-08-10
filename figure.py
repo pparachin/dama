@@ -46,5 +46,19 @@ class Figure:
     def set_as_chosen_move_in_tree(self, input_move):
         self.moves_tree.set_chosen_move(input_move)
 
+    def add_to_move_tree(self, input_move):
+        self.moves_tree.add_move(input_move)
+
     def __repr__(self):
         return self._label
+
+    # spravne pythonovsky takhle:
+    '''
+    @property
+    def position(self):
+        return self._position
+    
+    @position.setter
+    def position(self, value):
+        self._position = value
+    '''

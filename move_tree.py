@@ -11,9 +11,7 @@ class MovesTree:
         return self.root
 
     def add_move(self, move):
-        # if self.root is None:
-        #     self.root        
-        if self.chosen_move is None and move not in self.root.children:
+        if self.chosen_move is None and move not in self.root.get_all_submoves():
             self.root.add_child(move)
         elif move not in self.chosen_move.children:
             self.chosen_move.add_child(move)
@@ -81,10 +79,24 @@ class Move:
         self.parent = parent
         parent.add_child(self)
 
+    def get_all_submoves(self):
+        output = []
+        if self not in output:
+            output.append(self)
+        for child in self.children:
+            for submove in child.get_all_submoves():
+                output.append(submove)
+        return output
+
     def add_child(self, move):
-        if move not in self.children:
-            self.children.append(move)
-            move.set_parent(self)
+        '''
+        This function is auxilliary function for MovesTree.add_move
+        For figures that are NOT queens: block duplicit movec
+        For queens: uniqueness of move is not granted
+        '''
+        # neimplementovano: jestli je textove stejny jako ten move, ktery se snazi pridat, tak
+        self.children.append(move)
+        move.set_parent(self)
 
     def force_birth(self, position):
         offspring = Move([self.data[-1], position], self.figure, self.board_state)

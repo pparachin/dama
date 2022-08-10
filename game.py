@@ -5,6 +5,7 @@ from gui import GUI
 from validator import Validator
 from stone import Stone
 from lady import Lady
+from move_tree import get_moves as treemoves
 
 
 class Game:
@@ -14,9 +15,9 @@ class Game:
         self._type_of_game = type_of_game
         self.status = status
         self.validator = Validator()
+        self._figures = []
         self.game_field = self.generate_game_field("data/moves.csv")
         self.players = []
-        self._figures = []
         self.game(self.status, self.validator)
         self.player_to_turn = None
 
@@ -40,12 +41,21 @@ class Game:
             gui.run_game(validator, self.status, self.players, self.game_field, self, self.player_to_turn)
 
     def next_turn(self):
+        output = None
+        
         if self.player_to_turn is PlayerColor.WHITE:
             self.player_to_turn = PlayerColor.BLACK
-            return self.player_to_turn
+            output = self.player_to_turn
         elif self.player_to_turn is PlayerColor.BLACK:
             self.player_to_turn = PlayerColor.WHITE
-            return self.player_to_turn
+            output = self.player_to_turn
+
+        # FOR DEBUGGING ONLY
+        # for _fig in self._figures:
+        #     print(f"{_fig.show()}:{treemoves(_fig.moves_tree)}")
+        # print("--------------------")
+
+        return output
 
     def generate_game_field(self, game_file_path):
         if self._is_new_game:
@@ -74,7 +84,9 @@ class Game:
             row_col = self.validator.get_rowcol_from_sq_string(key)
             row, col = row_col[0], row_col[1]
             temp_2D_field[row][col] = temp_figure
-
+            # add figure to actual game for iterating purposes
+            self._figures.append(temp_figure)
+            
         return temp_2D_field
 
     def sync_figure_positions_with_field(self, input_field):

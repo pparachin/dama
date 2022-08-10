@@ -339,6 +339,13 @@ class Validator():
                 pass  # ignoring exceptions caused by trying to delete an item that is not in the list
         return circle
 
+    def get_figure_from_move(self, move_as_a_list, game_field):
+        """
+        Takes a move in the form of a list on input and returns the figure at the first position as pointer to object.
+        This function DOES NOT assert correctness.
+        """
+        return game_field[self.get_rowcol_from_sq_string(move_as_a_list[0])[0]][self.get_rowcol_from_sq_string(move_as_a_list[0])[1]]
+
     def find_all_valid_moves(self, game, player_to_turn):
         """
         Generates all possible moves for each figure but returns only valid moves.
@@ -530,10 +537,11 @@ class Validator():
 
         control_output = moves
 
+        # REMOVED BECAUSE OF DUPLICITY ISSUES
         # adding move objects to move trees of figures
-        for obj_move in obj_moves:
-            obj_figure = obj_move.get_figure()
-            obj_figure.moves_tree.add_move(obj_move)
+        #for obj_move in obj_moves:
+        #    obj_figure = obj_move.get_figure()
+        #    obj_figure.moves_tree.add_move(obj_move)
 
         # control output
         return control_output
@@ -626,6 +634,7 @@ class Validator():
         it cannot immediately after jump over 'b' on south-west because the first 'b' is still there
         until the whole jumping chain is completed)
         """
+
         for move in get_moves(input_move):
 
             for i in range(len(move) - 1):
@@ -640,10 +649,15 @@ class Validator():
     def move_execution(self, input_move, game_field, player_to_turn, players):
         """
         Takes game_field dictionary and move on input.
+        Logs the move into selected figure's move_tree.
         Performs the move and changes game_field accordingly.
         Returns changed game_field on output.
         """
         move = input_move
+
+        # adding the move into figure's move_tree
+        selected_figure = self.get_figure_from_move(input_move, game_field)
+        selected_figure.set_as_chosen_move_in_tree(input_move)
 
         for i in range(len(move) - 1):
             # selected "friendly" figure transportation
