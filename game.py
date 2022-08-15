@@ -6,17 +6,18 @@ from validator import Validator
 from stone import Stone
 from lady import Lady
 from move_tree import get_moves as treemoves
+from custom_errors import *
 
 
 class Game:
 
-    def __init__(self, type_of_game, status, is_new_game=True): # prepsat is_new_game
+    def __init__(self, type_of_game, status, is_new_game=True, file_path="data/moves.csv"):
         self._is_new_game = is_new_game
         self._type_of_game = type_of_game
         self.status = status
         self.validator = Validator()
         self._figures = []
-        self.game_field = self.generate_game_field("data/moves.csv")
+        self.game_field = self.generate_game_field(file_path)
         self.players = []
         self.game(self.status, self.validator)
         self.player_to_turn = None
@@ -59,10 +60,23 @@ class Game:
 
     def generate_game_field(self, game_file_path):
         if self._is_new_game:
-            if self.validator.validate_base_setup(game_file_path) != 0:
-                return None
-            else:
+            error_state = self.validator.validate_base_setup(game_file_path)
+            if error_state == 0:
                 self._is_new_game = False
+            elif self.validator.validate_base_setup(game_file_path) == 1:
+                raise IncorrectBaseGameSetupError()
+            elif self.validator.validate_base_setup(game_file_path) == 2:
+                raise FailedToReadFileError()
+        else:
+            error_state = self.validator.validate_any_setup(game_file_path)
+            if error_state == 1:
+                raise SetupNotMatchingRulesError()
+            elif error_state == 2:
+                raise InvalidFigurePositionError()
+            elif error_state == 3:
+                raise MoreFiguresOnOneTileError()
+            elif error_state == 4:
+                raise FailedToReadFileError()
 
         temp_dict_field = self.validator.old_generate_game_field(game_file_path)
         temp_2D_field = self.validator.game_field_to2D(temp_dict_field)

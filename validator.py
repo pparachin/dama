@@ -169,6 +169,47 @@ class Validator():
         return output
 
     @staticmethod
+    def validate_any_setup(game_file_path):
+        '''
+        returns 0 if setup is valid
+        returns 1 if setup does not match set rules
+        returns 2 if figure is placed on invalid position or out of bounds
+        returns 3 if one tile is occupied by more than one figure
+        returns 4 for errors connected with reading the file, e.g.: incorrect path
+        '''
+        output = None
+        try:
+            with open(game_file_path) as game_file:
+                game_file_contents = game_file.read().splitlines()
+                
+                for line in game_file_contents:
+                    separated_texts_on_line = line.split(',')
+
+                    if len(separated_texts_on_line) != 2:
+                        output = 3
+                        break
+
+                    if separated_texts_on_line[0][0] not in "abcdefgh" or int(separated_texts_on_line[0][1]) not in range(1, 9):
+                        output = 2
+                        break
+
+                    if separated_texts_on_line[1] not in ['w', 'ww', 'b', 'bb']:
+                        output = 1
+                        break
+
+                    # stone cannot start on lady position
+                    if (separated_texts_on_line[1] is 'w' and separated_texts_on_line[0][1] is '8') or (separated_texts_on_line[1] is 'b' and separated_texts_on_line[0][1] is '1'):
+                        output = 2
+                        break
+
+                game_file.close()
+
+        except FileNotFoundError:
+            output = 4
+
+        return output
+
+    @staticmethod
     def get_move_direction(move):
         """
         Takes simple move on input (that means a list of squares, only consideres first and last).

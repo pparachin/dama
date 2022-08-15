@@ -10,3 +10,4 @@ __pycache__/lady.cpython-310.pyc
 tests.py
 .vscode/launch.json
 data/test.csv
+__pycache__/custom_errors.cpython-310.pyc
