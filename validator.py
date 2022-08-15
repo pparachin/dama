@@ -508,6 +508,7 @@ class Validator():
         # eliminating simple moves if any jumping moves are available
         if jumping_moves:
             moves = jumping_moves
+            are_queen_moves = False
 
             # eliminating stone moves if any queen/king moves are available
             queen_moves = []
@@ -522,18 +523,19 @@ class Validator():
 
             if queen_moves:
                 moves = queen_moves
+                are_queen_moves = True
 
             # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
-            moves = self.jump_move_simulation(moves, game)
+            moves = self.jump_move_simulation(moves, game, are_queen_moves)
 
         # creating move objects
-        obj_moves = []
-        for move in moves:
-            rowcol = self.get_rowcol_from_sq_string(move[0])
-            r = rowcol[0]
-            c = rowcol[1]
-            temp_move = Move(move, game_field[r][c])
-            obj_moves.append(temp_move)
+        # obj_moves = []
+        # for move in moves:
+        #     rowcol = self.get_rowcol_from_sq_string(move[0])
+        #     r = rowcol[0]
+        #     c = rowcol[1]
+        #     temp_move = Move(move, game_field[r][c])
+        #     obj_moves.append(temp_move)
 
         control_output = moves
 
@@ -546,47 +548,113 @@ class Validator():
         # control output
         return control_output
 
-    def jump_move_simulation(self, moves, game):
+    def jump_move_simulation(self, moves, game, are_queen_moves):
         """
         Takes moves list on input, presumes all of them are jumping moves.
         Simulates all possible outcomes of these moves a tests for any compulsory jump moves.
         Returns list of moves and chained moves, if any.
         Any chained moves would replace their predecessors - no need to check that after this function ended.
         """
-        simulated_move_trees = []
-        output = []
+        # IMPORTANT_NOTE: Multijumps / chained jumps are not superior to single-jumps, meaning if the player can perform a single-jump with one figure and chained
+        # jump with other, they can choose which one they'll perform. However it is not allowed to jump fewer times than possible with one particular figure. Also
+        # queen / lady jumps are ALWAYS prioritized to regular stone moves and regular stone jumps.
 
-        # 1) transfering lists of strings into Move objects
-        for move in moves:
-            # copying playing field so we avoid editing actual game and are just simulating what could happen
-            simulated_game_field = copy.deepcopy(game.game_field)
+        output = moves
+        game_field = game.get_game_field()
+        while True:
+            jump_is_possible = False
+            for move in output:
+                jump_is_possible = False # try to chain as many jumps as possible
+                # test only 2 directions and only first tile
+                current_figure = game_field[self.get_rowcol_from_sq_string(move[0])[0]][self.get_rowcol_from_sq_string(move[0])[1]]
+                move_direction = self.get_move_direction(move)
+                candidate_moves = []
+                stone_color = StoneColor.WHITE if move_direction[0] == 'n' else StoneColor.BLACK
+                candidate_enemy_tiles = self.get_std_twin(move[-1], 1, stone_color)
+                candidate_empty_tiles = self.get_std_twin(move[-1], 2, stone_color)
+                for tile1 in candidate_enemy_tiles:
+                    for tile2 in candidate_empty_tiles:
+                        if (self.get_move_direction([tile1, tile2]) in ['ne', 'nw'] and move_direction[0] == 'n') or (self.get_move_direction([tile1, tile2]) in ['se', 'sw'] and move_direction[0] == 's'):
+                            #candidate_move = copy.deepcopy(move)
+                            candidate_move = copy.copy(move)
+                            candidate_move.append(tile2)
+                            candidate_moves.append(candidate_move)
 
-            # for better navigation chained jumps will be stored in trees
-            simulated_moves_tree = MovesTree()
+                # test for enemies and empty spaces in candidate_moves (ONLY REGULAR STONES)
+                # 1) enemy on closer tile
+                # 2) empty space OR CURRENT FIGURE on farther tile
+                # 3) NO TILE REPETITION <- not handeled in current version
+                for candidate_move in candidate_moves:
+                    row_minus2, col_minus2 = self.get_rowcol_from_sq_string(candidate_move[-2])
+                    row_minus1, col_minus1 = self.get_rowcol_from_sq_string(candidate_move[-1])
+                    betw_tile = self.find_inbetween_coords(candidate_move[-2], candidate_move[-1])
+                    row_betw, col_betw = self.get_rowcol_from_sq_string(betw_tile[0]) 
+                    # betw_tile is output of function, that typically returns list of n strings with length of 2 characters
+                    # but this time we know it will always return len=1 string, thus the betw_tile[0]
+                    full_move_chain = []
+                    for i in range(1, len(candidate_move)):
+                        if candidate_move[i-1] not in full_move_chain: full_move_chain.append(candidate_move[i-1])
+                        extensions = self.find_inbetween_coords(candidate_move[i], candidate_move[i-1])
+                        for extension in extensions:
+                            if extension not in full_move_chain: full_move_chain.append(extension)
+                        if candidate_move[i] not in full_move_chain: full_move_chain.append(candidate_move[i])
+                    #if (candidate_move[-2] not in full_move_chain) and (game_field[row_betw][col_betw] is None) and (game[row_minus1][col_minus1] is None or game[row_minus1][col_minus1] == current_figure):
+                    if ((game_field[row_betw][col_betw] is not None and game_field[row_betw][col_betw].get_color() is StoneColor.WHITE and current_figure.get_color() is StoneColor.BLACK) or (game_field[row_betw][col_betw] is not None and game_field[row_betw][col_betw].get_color() is StoneColor.BLACK and current_figure.get_color() is StoneColor.WHITE)) and (game_field[row_minus1][col_minus1] is None or game_field[row_minus1][col_minus1] == current_figure):
+                        moves.append(candidate_move)
+                        print(candidate_move)
+                        jump_is_possible = True
 
-            rowcol = self.get_rowcol_from_sq_string(move[0])
-            r = rowcol[0]
-            c = rowcol[1]
-
-            root_move = Move(input_list_of_squares=[move[0], move[1]], input_figure=game.game_field[r][c],
-                             input_board=simulated_game_field)
-            simulated_moves_tree.set_root_move(root_move)
-            simulated_move_trees.append(simulated_moves_tree)
-
-        # 2) calculating all possible chained jump variations
-        for move_tree in simulated_move_trees:
-            game.sync_figure_positions_with_field(game.get_game_field())
-            self._simulation_subprocess(move_tree.get_root(), simulated_game_field, game)
-
-        # 3) transfering Move objects into lists of string
-        for tree in simulated_move_trees:
-            for move in get_moves(tree):
-                output.append(move)
-
-        # 4) repairing figure positions that may have been changed during _simulation_subprocess
-        game.sync_figure_positions_with_field(game.get_game_field())
+                if are_queen_moves:
+                    pass
+                    # test other 2 directions and all tiles for all directions
+                    # tiles can repeat themselves
+            
+            output = moves
+            if not jump_is_possible:
+                break
 
         return output
+        
+        # OLD CODE
+
+        # simulated_move_trees = []
+        # output = []
+
+        # # 1) transfering lists of strings into Move objects
+        # for move in moves:
+            
+        #     # copying playing field so we avoid editing actual game and are just simulating what could happen
+        #     simulated_game_field = copy.deepcopy(game.game_field)
+
+        #     # for better navigation chained jumps will be stored in trees
+        #     simulated_moves_tree = MovesTree()
+
+        #     rowcol = self.get_rowcol_from_sq_string(move[0])
+        #     r = rowcol[0]
+        #     c = rowcol[1]
+
+        #     root_move = Move(input_list_of_squares=[move[0], move[1]], input_figure=game.game_field[r][c],
+        #                      input_board=simulated_game_field)
+        #     simulated_moves_tree.set_root_move(root_move)
+        #     simulated_move_trees.append(simulated_moves_tree)
+
+        # # 2) calculating all possible chained jump variations
+        # for move_tree in simulated_move_trees:
+        #     game.sync_figure_positions_with_field(game.get_game_field())
+        #     self._simulation_subprocess(move_tree.get_root(), simulated_game_field, game)
+
+        # # 3) transfering Move objects into lists of string
+        # for tree in simulated_move_trees:
+        #     for move in get_moves(tree):
+        #         output.append(move)
+
+        # # 4) repairing figure positions that may have been changed during _simulation_subprocess
+        # game.sync_figure_positions_with_field(game.get_game_field())
+
+        # return output
+
+        # END OF OLD CODE
+
 
     def _simulation_subprocess(self, move, simulated_game_field, game):
 
