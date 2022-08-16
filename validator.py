@@ -241,6 +241,14 @@ class Validator():
             output = 'sw'
 
         return output
+    
+    @staticmethod
+    def deduplicate(common_list):
+        unique_list = []
+        for item in common_list:
+            if item not in unique_list:
+                unique_list.append(item)    
+        return unique_list
 
     def span(self, move, direction=None):
         """
@@ -569,25 +577,24 @@ class Validator():
             # if there are any jumping moves, they need to be simulated further for compulsory chained jumps
             moves = self.jump_move_simulation(moves, game, are_queen_moves)
 
+        # odstraneni duplikatu z listu moves
+        control_output = self.deduplicate(moves)
+
         # creating move objects
-        # obj_moves = []
-        # for move in moves:
-        #     rowcol = self.get_rowcol_from_sq_string(move[0])
-        #     r = rowcol[0]
-        #     c = rowcol[1]
-        #     temp_move = Move(move, game_field[r][c])
-        #     obj_moves.append(temp_move)
+        obj_moves = []
+        for move in control_output:
+            rowcol = self.get_rowcol_from_sq_string(move[0])
+            r = rowcol[0]
+            c = rowcol[1]
+            temp_move = Move(move, game_field[r][c])
+            obj_moves.append(temp_move)
 
-        control_output = moves
-
-        # REMOVED BECAUSE OF DUPLICITY ISSUES
         # adding move objects to move trees of figures
-        #for obj_move in obj_moves:
-        #    obj_figure = obj_move.get_figure()
-        #    obj_figure.moves_tree.add_move(obj_move)
+        for obj_move in obj_moves:
+           obj_figure = obj_move.get_figure()
+           obj_figure.moves_tree.add_move(obj_move)
 
         # control output
-
         self._last_returned_set_of_moves = copy.deepcopy(control_output)
         return control_output
 
@@ -649,6 +656,7 @@ class Validator():
 
                 if are_queen_moves:
                     pass
+                    # TODO: queen chained jumps
                     # test other 2 directions and all tiles for all directions
                     # tiles can repeat themselves
             
@@ -676,15 +684,20 @@ class Validator():
         Performs the move and changes game_field accordingly.
         Returns changed game_field on output.
         """
-        #print(f"{input_move} in {self._last_returned_set_of_moves}")
+       
+        # because only information about first and last tile transfer from game/gui to validator
+        # this short block of code at the start of the function selects most relevant move
+        # from all suggested moves validator returned during last call of find_all_valid_moves() function
         for _move in self._last_returned_set_of_moves:
             if _move[0] == input_move[0] and _move[-1] == input_move[-1]:
                 move = _move
+                input_move = _move
                 break
 
         # adding the move into figure's move_tree
         selected_figure = self.get_figure_from_move(input_move, game_field)
         selected_figure.set_as_chosen_move_in_tree(input_move)
+        #selected_figure.print_move_tree()
 
         for i in range(len(move) - 1):
             # selected "friendly" figure transportation

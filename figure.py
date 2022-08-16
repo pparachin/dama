@@ -34,6 +34,9 @@ class Figure:
     def get_label(self):
         return self._label
 
+    def print_move_tree(self):
+        print(get_moves(self.moves_tree))
+
     def set_position(self, position):
         self._position = position
 

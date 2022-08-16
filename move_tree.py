@@ -11,6 +11,7 @@ class MovesTree:
         return self.root
 
     def add_move(self, move):
+        # TODO: zkontrolovat, jestli se nepridava textove stejny move obj.
         if self.chosen_move is None and move not in self.root.get_all_submoves():
             self.root.add_child(move)
         elif move not in self.chosen_move.children:
