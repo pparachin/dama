@@ -231,6 +231,10 @@ class Validator():
                         output = 2
                         break
 
+                    if (separated_texts_on_line[0][0] in "aceg" and int(separated_texts_on_line[0][1]) % 2 == 0) or (separated_texts_on_line[0][0] in "bdfh" and int(separated_texts_on_line[0][1]) % 2 == 1):
+                        output = 2
+                        break
+
                     if separated_texts_on_line[1] not in ['w', 'ww', 'b', 'bb']:
                         output = 1
                         break
@@ -698,13 +702,10 @@ class Validator():
                             jump_is_possible = True
 
                 if are_queen_moves:
-                    
-                    # TODO: queen chained jumps
-                    # pozor na nekonečný prostor za nepřítelem
-                    # pozor na přeskočení více jak jednoho nepřítele bez mezery, to nesmí jít
 
                     forbidden_tiles = [] # list for tiles containing already killed enemy figures, it is forbidden to jump over these tiles again according to the rules
 
+                    # generating full path where the figure was "dragged" tile by tile to inspect which figures it jumped over
                     full_move_chain = []
                     for i in range(1, len(move)):
                         if move[i-1] not in full_move_chain: full_move_chain.append(move[i-1])
@@ -712,40 +713,66 @@ class Validator():
                         for extension in extensions:
                             if extension not in full_move_chain: full_move_chain.append(extension)
                         if move[i] not in full_move_chain: full_move_chain.append(move[i])
+
+                    # marking inappropriate tiles as forbidden
                     for tile in full_move_chain:
                         tile_r = self.get_rowcol_from_sq_string(tile)[0]
                         tile_c = self.get_rowcol_from_sq_string(tile)[1]
                         if game_field[tile_r][tile_c] is not None and game_field[tile_r][tile_c] != current_figure:
                             forbidden_tiles.append(tile)
 
-                    for direction in ['nw', 'ne', 'sw', 'se']:
-                        line_in_current_direction = self.span([move[-1]], direction)
-                        for i in range(1, len(line_in_current_direction)):
-                            
-                            if not (self.find_inbetween_distance(move[-1], line_in_current_direction[i-1]) < self.find_inbetween_distance(move[-1], line_in_current_direction[i])):
-                                line_in_current_direction.reverse()
+                    # enumerate translation for copied part of move finding algorithm (reused beginning part of find_all_valid_moves() function)
+                    if current_figure.get_color() == StoneColor.BLACK:
+                        player_to_turn = PlayerColor.BLACK
+                    else:
+                        player_to_turn = PlayerColor.WHITE
 
-                            near = i - 1
-                            far = i
+                    for i in range(8):
+                        close_vicinity = self.get_circle(move[-1], diameter=(1+i))
+                        for j in range(8):
+                            further_vicinity = self.get_circle(move[-1], diameter=(2+j))
 
-                            near_tile_r = self.get_rowcol_from_sq_string(line_in_current_direction[near])[0]
-                            near_tile_c = self.get_rowcol_from_sq_string(line_in_current_direction[near])[1]
-                            far_tile_r = self.get_rowcol_from_sq_string(line_in_current_direction[far])[0]
-                            far_tile_c = self.get_rowcol_from_sq_string(line_in_current_direction[far])[1]
+                            for closer_sq in close_vicinity:
+                                for further_sq in further_vicinity:
 
-                            if ((game_field[near_tile_r][near_tile_c] is not None and game_field[near_tile_r][near_tile_c].get_color() != stone_color) and (game_field[far_tile_r][far_tile_c] is None)
-                            and not ((game_field[near_tile_r][near_tile_c] is not None and game_field[near_tile_r][near_tile_c].get_color() == stone_color and game_field[near_tile_r][near_tile_c] != current_figure) or (game_field[far_tile_r][far_tile_c] is not None and game_field[far_tile_r][far_tile_c].get_color() == stone_color and game_field[far_tile_r][far_tile_c] != current_figure) or
-                            (self.get_sq_string_from_2D_board(near_tile_r, near_tile_c) in forbidden_tiles) or (self.get_sq_string_from_2D_board(far_tile_r, far_tile_c) in forbidden_tiles))):
-                                # if there is same-colored figure blocking the way BUT NOT CURRENTLY CHOSEN LADY, or there is enemy figure which has already been taken during this move
-                                # and near tile is enemy and farther tile is empty
-                                candidate_move = []
-                                for tile in move:
-                                    candidate_move.append(tile)
-                                candidate_move.append(line_in_current_direction[far])
-                                #candidate_moves.append(candidate_move)
-                                moves.append(candidate_move)
-                                forbidden_tiles.append(line_in_current_direction[near])
-                                jump_is_possible = True        
+                                    rowcol = self.get_rowcol_from_sq_string(closer_sq)
+                                    clo_r = rowcol[0]
+                                    clo_c = rowcol[1]
+                                    rowcol = self.get_rowcol_from_sq_string(further_sq)
+                                    fur_r = rowcol[0]
+                                    fur_c = rowcol[1]
+
+                                    if self.get_move_direction([move[-1], closer_sq]) == self.get_move_direction([move[-1], further_sq]) and isinstance(game_field[clo_r][clo_c], Figure) and game_field[clo_r][clo_c].get_color() != stone_color and closer_sq not in forbidden_tiles and (game_field[fur_r][fur_c] is None or game_field[fur_r][fur_c] is current_figure):
+                                        is_not_forbidden = True
+                                        for tile in self.find_inbetween_coords(move[-1], further_sq):
+                                            if tile in forbidden_tiles:
+                                                is_not_forbidden = False                         
+                                        if is_not_forbidden:
+                                            candidate_moves.append([move[-1], further_sq])
+
+                    for candidate_move in candidate_moves:
+
+                        stone_count = 0
+                        for square in self.find_inbetween_coords(candidate_move[0], candidate_move[1]):
+                            if isinstance(game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]], Figure) and \
+                            ((player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['b', 'bb']) or
+                            (player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['w', 'ww'])):
+                                stone_count += 1
+
+                            elif isinstance(game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]], Figure) and \
+                            ((player_to_turn == PlayerColor.BLACK and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['b', 'bb']) or
+                            (player_to_turn == PlayerColor.WHITE and game_field[self.get_rowcol_from_sq_string(square)[0]][self.get_rowcol_from_sq_string(square)[1]].get_label() in ['w', 'ww'])) or \
+                            square in forbidden_tiles:
+                                stone_count = 0
+                                break
+                    
+                        if stone_count == 1:
+                            final_move = []
+                            for tile in move:
+                                final_move.append(tile)
+                            final_move.append(candidate_move[-1])
+                            moves.append(final_move)
+                            jump_is_possible = True
 
             output = moves
 
@@ -759,9 +786,12 @@ class Validator():
                 chained_are_available = True
                 break
         if chained_are_available:
+            moves_to_be_removed = []
             for move in output:
                 if len(move) == 2:
-                    output.remove(move)
+                    moves_to_be_removed.append(move)
+            for move in moves_to_be_removed:
+                output.remove(move)
 
         return output
 
