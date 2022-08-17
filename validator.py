@@ -346,6 +346,9 @@ class Validator():
             output.append(str(possible_letters[i]) + str(possible_numbers[i]))
 
         return output
+    
+    def find_inbetween_distance(self, tile1, tile2):
+        return len(self.find_inbetween_coords(tile1, tile2))
 
     def get_bounded_line(self, start, end):
         output = [start, self.find_inbetween_coords(start, end), end]
@@ -612,15 +615,17 @@ class Validator():
         output = moves
         game_field = game.get_game_field()
         while True:
-            jump_is_possible = False
+            jump_is_possible = False # Do not delete, initializes jump_is_possible var, which needs to be set to False every time new move is picked, but it needs
+                                     # a decently large scope to cover whole while True loop.
             for move in output:
+                jump_is_possible = False # try to chain as many jumps as possible
+                current_figure = game_field[self.get_rowcol_from_sq_string(move[0])[0]][self.get_rowcol_from_sq_string(move[0])[1]]
+                stone_color = current_figure.get_color() # StoneColor.WHITE if move_direction[0] == 'n' else StoneColor.BLACK
+                candidate_moves = []
+
                 if not are_queen_moves:
-                    jump_is_possible = False # try to chain as many jumps as possible
                     # test only 2 directions and only first tile
-                    current_figure = game_field[self.get_rowcol_from_sq_string(move[0])[0]][self.get_rowcol_from_sq_string(move[0])[1]]
                     move_direction = self.get_move_direction(move)
-                    candidate_moves = []
-                    stone_color = StoneColor.WHITE if move_direction[0] == 'n' else StoneColor.BLACK
                     candidate_enemy_tiles = self.get_std_twin(move[-1], 1, stone_color)
                     candidate_empty_tiles = self.get_std_twin(move[-1], 2, stone_color)
                     for tile1 in candidate_enemy_tiles:
@@ -655,12 +660,57 @@ class Validator():
                             jump_is_possible = True
 
                 if are_queen_moves:
-                    pass
+                    
                     # TODO: queen chained jumps
-                    # test other 2 directions and all tiles for all directions
-                    # tiles can repeat themselves
-            
+                    # pozor na nekonečný prostor za nepřítelem
+                    # pozor na přeskočení více jak jednoho nepřítele bez mezery, to nesmí jít
+
+                    forbidden_tiles = [] # list for tiles containing already killed enemy figures, it is forbidden to jump over these tiles again according to the rules
+
+                    full_move_chain = []
+                    for i in range(1, len(move)):
+                        if move[i-1] not in full_move_chain: full_move_chain.append(move[i-1])
+                        extensions = self.find_inbetween_coords(move[i], move[i-1])
+                        for extension in extensions:
+                            if extension not in full_move_chain: full_move_chain.append(extension)
+                        if move[i] not in full_move_chain: full_move_chain.append(move[i])
+                    for tile in full_move_chain:
+                        tile_r = self.get_rowcol_from_sq_string(tile)[0]
+                        tile_c = self.get_rowcol_from_sq_string(tile)[1]
+                        if game_field[tile_r][tile_c] is not None and game_field[tile_r][tile_c] != current_figure:
+                            forbidden_tiles.append(tile)
+
+                    for direction in ['nw', 'ne', 'sw', 'se']:
+                        line_in_current_direction = self.span([move[-1]], direction)
+                        for i in range(1, len(line_in_current_direction)):
+                            
+                            if not (self.find_inbetween_distance(move[-1], line_in_current_direction[i-1]) < self.find_inbetween_distance(move[-1], line_in_current_direction[i])):
+                                line_in_current_direction.reverse()
+
+                            near = i - 1
+                            far = i
+
+                            near_tile_r = self.get_rowcol_from_sq_string(line_in_current_direction[near])[0]
+                            near_tile_c = self.get_rowcol_from_sq_string(line_in_current_direction[near])[1]
+                            far_tile_r = self.get_rowcol_from_sq_string(line_in_current_direction[far])[0]
+                            far_tile_c = self.get_rowcol_from_sq_string(line_in_current_direction[far])[1]
+
+                            if ((game_field[near_tile_r][near_tile_c] is not None and game_field[near_tile_r][near_tile_c].get_color() != stone_color) and (game_field[far_tile_r][far_tile_c] is None)
+                            and not ((game_field[near_tile_r][near_tile_c] is not None and game_field[near_tile_r][near_tile_c].get_color() == stone_color and game_field[near_tile_r][near_tile_c] != current_figure) or (game_field[far_tile_r][far_tile_c] is not None and game_field[far_tile_r][far_tile_c].get_color() == stone_color and game_field[far_tile_r][far_tile_c] != current_figure) or
+                            (self.get_sq_string_from_2D_board(near_tile_r, near_tile_c) in forbidden_tiles) or (self.get_sq_string_from_2D_board(far_tile_r, far_tile_c) in forbidden_tiles))):
+                                # if there is same-colored figure blocking the way BUT NOT CURRENTLY CHOSEN LADY, or there is enemy figure which has already been taken during this move
+                                # and near tile is enemy and farther tile is empty
+                                candidate_move = []
+                                for tile in move:
+                                    candidate_move.append(tile)
+                                candidate_move.append(line_in_current_direction[far])
+                                #candidate_moves.append(candidate_move)
+                                moves.append(candidate_move)
+                                forbidden_tiles.append(line_in_current_direction[near])
+                                jump_is_possible = True        
+
             output = moves
+
             if not jump_is_possible:
                 break
 
