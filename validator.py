@@ -57,8 +57,7 @@ class Validator():
 
         return output
 
-    @staticmethod
-    def old_generate_game_field(game_file_path):
+    def old_generate_game_field(self, game_file_path):
         """
         This function opens .csv file and outputs corresponding "game field dictionary".
         !!! Note: This function does NOT validate if the text inside file is correct. !!!
@@ -74,6 +73,18 @@ class Validator():
         try:
             with open(game_file_path) as game_file:
                 game_file_contents = game_file.read().splitlines()
+
+                # removing empty lines
+                lines_to_remove = []
+                for line in game_file_contents:
+                    if self.line_empty(line):
+                        lines_to_remove.append(line)
+                for line_to_be_removed in lines_to_remove:
+                    try:
+                        game_file_contents.remove(line_to_be_removed)
+                    except:
+                        ...
+
                 for line in game_file_contents:
                     playing_field[line[0:2]] = line[3:]
                 game_file.close()
@@ -107,7 +118,13 @@ class Validator():
         return output
 
     @staticmethod
-    def validate_base_setup(game_file_path):
+    def line_empty(line):
+        if line == '':
+            return True
+        allowed_chars = " "
+        return all(character in allowed_chars for character in line)
+
+    def validate_base_setup(self, game_file_path):
         """
         returns 0 if input file path leads to .csv file containing correct setup for Czech dama
         returns 1 for incorrect game setup
@@ -143,8 +160,19 @@ class Validator():
         output = None
         try:
             with open(game_file_path) as game_file:
-                game_file_contents = game_file.read().splitlines()
+                game_file_contents = game_file.read().splitlines()                
                 setup_v1 = None
+
+                # removing empty lines
+                lines_to_remove = []
+                for line in game_file_contents:
+                    if self.line_empty(line):
+                        lines_to_remove.append(line)
+                for line_to_be_removed in lines_to_remove:
+                    try:
+                        game_file_contents.remove(line_to_be_removed)
+                    except:
+                        ...
 
                 for valid_line in base_setup:
                     if valid_line not in game_file_contents:
@@ -168,8 +196,7 @@ class Validator():
 
         return output
 
-    @staticmethod
-    def validate_any_setup(game_file_path):
+    def validate_any_setup(self, game_file_path):
         '''
         returns 0 if setup is valid
         returns 1 if setup does not match set rules
@@ -182,6 +209,17 @@ class Validator():
             with open(game_file_path) as game_file:
                 game_file_contents = game_file.read().splitlines()
                 
+                # removing empty lines
+                lines_to_remove = []
+                for line in game_file_contents:
+                    if self.line_empty(line):
+                        lines_to_remove.append(line)
+                for line_to_be_removed in lines_to_remove:
+                    try:
+                        game_file_contents.remove(line_to_be_removed)
+                    except:
+                        ...
+
                 for line in game_file_contents:
                     separated_texts_on_line = line.split(',')
 
