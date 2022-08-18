@@ -1,3 +1,6 @@
+from multiprocessing.reduction import duplicate
+
+
 class MovesTree:
 
     def __init__(self):
@@ -11,14 +14,13 @@ class MovesTree:
         return self.root
 
     def add_move(self, move):
-        self.root.add_child(move)
+        if self.chosen_move is not None:
+            self.chosen_move.add_child(move)
+        else:
+            self.root.add_child(move)
         
     def set_chosen_move(self, input_move):
-        for child in self.root.children:
-            if child is input_move:
-                self.chosen_move = child
-            else:
-                self.chosen_move = child.look_for_chosen_move(input_move)
+        self.chosen_move = input_move
 
     def get_move_by_data(self, input_data):
         if self.root.data == input_data:
@@ -117,6 +119,19 @@ class Move:
         self.children.append(offspring)
         offspring.set_parent(self)
         return offspring
+
+    def set_siblings(self, list_of_siblings, input_figure):
+        if self.parent is None:
+            return None
+        else:
+            for sibling in list_of_siblings:
+                duplicate = False
+                temp_move_object = Move(sibling, input_figure)
+                for child in self.parent.children:
+                    if child.get_data() == sibling:
+                        duplicate = True
+                if not duplicate:
+                    self.parent.children.append(temp_move_object)
 
     def get_data(self):
         return self.data

@@ -808,6 +808,13 @@ class Validator():
         selected_figure = self.get_figure_from_move(input_move, game_field)
         temp_move_object = Move(input_move, selected_figure)
         selected_figure.add_to_move_tree(temp_move_object)
+        selected_figure.set_as_chosen_move_in_tree(temp_move_object)
+        temp_siblings = []
+        for _move in self._last_returned_set_of_moves:
+            if self.get_figure_from_move(_move, game_field) == selected_figure:
+                temp_siblings.append(_move)
+        if temp_siblings != []:
+            temp_move_object.set_siblings(temp_siblings, selected_figure)
 
         for i in range(len(move) - 1):
             # selected "friendly" figure transportation
