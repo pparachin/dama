@@ -11,11 +11,7 @@ class MovesTree:
         return self.root
 
     def add_move(self, move):
-        # TODO: zkontrolovat, jestli se nepridava textove stejny move obj.
-        if self.chosen_move is None and move not in self.root.get_all_submoves():
-            self.root.add_child(move)
-        elif move not in self.chosen_move.children:
-            self.chosen_move.add_child(move)
+        self.root.add_child(move)
         
     def set_chosen_move(self, input_move):
         for child in self.root.children:
@@ -90,14 +86,31 @@ class Move:
         return output
 
     def add_child(self, move):
-        '''
-        This function is auxilliary function for MovesTree.add_move
-        For figures that are NOT queens: block duplicit movec
-        For queens: uniqueness of move is not granted
-        '''
-        # neimplementovano: jestli je textove stejny jako ten move, ktery se snazi pridat, tak
-        self.children.append(move)
-        move.set_parent(self)
+        # looking for longest branch of moves
+        its_children_have_no_children = False
+        for child in self.children:
+            if child.get_children() != []:
+                its_children_have_no_children = False
+                break
+        if self.children == [] or its_children_have_no_children:
+
+            # if textual interpretation of move is same as potential parent's or siblings'
+            # then this function will refuse to add it
+            is_not_duplicate = True
+            if self.data == move.get_data():
+                is_not_duplicate = False
+            for child in self.children:
+                if child.get_data() == move.get_data():
+                    is_not_duplicate = False
+
+            # every move in moves_tree has to start on the same tile as parents ended on
+            if self.data[-1] == move.get_data()[0] and is_not_duplicate:
+                self.children.append(move)
+                move.set_parent(self)
+
+        else:
+            for child in self.children:
+                child.add_child(move)
 
     def force_birth(self, position):
         offspring = Move([self.data[-1], position], self.figure, self.board_state)

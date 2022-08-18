@@ -625,19 +625,11 @@ class Validator():
         # odstraneni duplikatu z listu moves
         control_output = self.deduplicate(moves)
 
-        # creating move objects
-        obj_moves = []
-        for move in control_output:
-            rowcol = self.get_rowcol_from_sq_string(move[0])
-            r = rowcol[0]
-            c = rowcol[1]
-            temp_move = Move(move, game_field[r][c])
-            obj_moves.append(temp_move)
-
-        # adding move objects to move trees of figures
-        for obj_move in obj_moves:
-           obj_figure = obj_move.get_figure()
-           obj_figure.moves_tree.add_move(obj_move)
+        # adding all suggested moves into their figures' move trees
+        # for move in control_output:
+        #     selected_figure = self.get_figure_from_move(move, game_field)
+        #     temp_move_object = Move(move, selected_figure)
+        #     selected_figure.add_to_move_tree(temp_move_object)
 
         # control output
         self._last_returned_set_of_moves = copy.deepcopy(control_output)
@@ -812,10 +804,10 @@ class Validator():
                 input_move = _move
                 break
 
-        # adding the move into figure's move_tree
+        # adding the selected move into figure's move_tree
         selected_figure = self.get_figure_from_move(input_move, game_field)
-        selected_figure.set_as_chosen_move_in_tree(input_move)
-        #selected_figure.print_move_tree()
+        temp_move_object = Move(input_move, selected_figure)
+        selected_figure.add_to_move_tree(temp_move_object)
 
         for i in range(len(move) - 1):
             # selected "friendly" figure transportation
@@ -870,101 +862,3 @@ class Validator():
                 game_field[self.get_rowcol_from_sq_string(sq)[0]][self.get_rowcol_from_sq_string(sq)[1]] = None
 
         return game_field
-
-# OLD CODE
-
-        # simulated_move_trees = []
-        # output = []
-
-        # # 1) transfering lists of strings into Move objects
-        # for move in moves:
-            
-        #     # copying playing field so we avoid editing actual game and are just simulating what could happen
-        #     simulated_game_field = copy.deepcopy(game.game_field)
-
-        #     # for better navigation chained jumps will be stored in trees
-        #     simulated_moves_tree = MovesTree()
-
-        #     rowcol = self.get_rowcol_from_sq_string(move[0])
-        #     r = rowcol[0]
-        #     c = rowcol[1]
-
-        #     root_move = Move(input_list_of_squares=[move[0], move[1]], input_figure=game.game_field[r][c],
-        #                      input_board=simulated_game_field)
-        #     simulated_moves_tree.set_root_move(root_move)
-        #     simulated_move_trees.append(simulated_moves_tree)
-
-        # # 2) calculating all possible chained jump variations
-        # for move_tree in simulated_move_trees:
-        #     game.sync_figure_positions_with_field(game.get_game_field())
-        #     self._simulation_subprocess(move_tree.get_root(), simulated_game_field, game)
-
-        # # 3) transfering Move objects into lists of string
-        # for tree in simulated_move_trees:
-        #     for move in get_moves(tree):
-        #         output.append(move)
-
-        # # 4) repairing figure positions that may have been changed during _simulation_subprocess
-        # game.sync_figure_positions_with_field(game.get_game_field())
-
-        # return output
-
-    # def _simulation_subprocess(self, move, simulated_game_field, game):
-
-    #     game.sync_figure_positions_with_field(simulated_game_field)
-    #     to_be_calculated = []
-
-    #     # considering all cases for Stone()
-    #     if move.get_figure().get_label() in ['w', 'b']:
-    #         enemies = ['w', 'ww'] if move.get_figure().get_label() == 'b' else ['b', 'bb']
-    #         close_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=1,
-    #                                            color=move.get_figure().get_color())
-    #         further_vicinity = self.get_std_twin(move.get_figure().get_position(), diameter=2,
-    #                                              color=move.get_figure().get_color())
-    #         for closer_sq in close_vicinity:
-    #             for further_sq in further_vicinity:
-
-    #                 rowcol = self.get_rowcol_from_sq_string(closer_sq)
-    #                 clo_r = rowcol[0]
-    #                 clo_c = rowcol[1]
-    #                 rowcol = self.get_rowcol_from_sq_string(further_sq)
-    #                 fur_r = rowcol[0]
-    #                 fur_c = rowcol[1]
-
-    #                 if (self.get_move_direction([move.get_data()[0], closer_sq]) == self.get_move_direction(
-    #                         [move.get_data()[0], further_sq]) and
-    #                         isinstance(simulated_game_field[clo_r][clo_c], Figure) and
-    #                         simulated_game_field[clo_r][clo_c].get_label() in enemies and
-    #                         isinstance(simulated_game_field[fur_r][fur_c], str)):
-    #                     newchild = move.force_birth(further_sq)
-    #                     to_be_calculated.append(newchild)
-
-    #     # considering all cases for Lady()
-    #     # TODO:
-
-    #     # simulating the moves
-    #     for child in to_be_calculated:
-    #         self.move_simulation(move, simulated_game_field)
-    #         # repeating itself until no new children were generated
-    #         self._simulation_subprocess(child, simulated_game_field, game)
-
-    # def move_simulation(self, input_move, game_field):
-    #     """
-    #     Same as self.move_execution(), but does not eliminate enemy figures to ensure chained
-    #     jumps are calculated according to game rules (e.g. if 'ww' jumped over 'b' to north-east,
-    #     it cannot immediately after jump over 'b' on south-west because the first 'b' is still there
-    #     until the whole jumping chain is completed)
-    #     """
-
-    #     for move in get_moves(input_move):
-
-    #         for i in range(len(move) - 1):
-    #             # selected "friendly" figure transportation
-    #             old_stone = game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-    #                 self.get_rowcol_from_sq_string(move[i + 1])[1]]
-
-    #             game_field[self.get_rowcol_from_sq_string(move[i + 1])[0]][
-    #                 self.get_rowcol_from_sq_string(move[i + 1])[1]] = \
-    #                 game_field[self.get_rowcol_from_sq_string(move[i])[0]][self.get_rowcol_from_sq_string(move[i])[1]]
-
-# END OF OLD CODE
