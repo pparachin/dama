@@ -785,6 +785,30 @@ class Validator():
             for move in moves_to_be_removed:
                 output.remove(move)
 
+        # remove moves which violate rule n. 13 - a figure cannot end its jump on a tile from which it can jump further
+        moves_that_break_rule_13 = []
+        for move1 in output:
+            for move2 in output:
+                if move1 != move2:
+                    longer_move_contains_shorter = True
+                    if len(move1) <= len(move2):
+                        for i in range(len(move1)):
+                            if move1[i] != move2[i]:
+                                longer_move_contains_shorter = False
+                        if longer_move_contains_shorter:
+                            moves_that_break_rule_13.append(move1)
+                    else:
+                        for i in range(len(move2)):
+                            if move1[i] != move2[i]:
+                                longer_move_contains_shorter = False
+                        if longer_move_contains_shorter:
+                            moves_that_break_rule_13.append(move2)
+        for move_to_delete in moves_that_break_rule_13:
+            try:
+                output.remove(move_to_delete)
+            except:
+                ...                        
+
         return output
 
     def move_execution(self, input_move, game_field, player_to_turn, players):
