@@ -1,7 +1,11 @@
+from importlib.resources import path
 import pygame as pg
 from alias import PlayerColor
 from figure import Figure
 from stone import Stone
+import tkinter
+import tkinter.filedialog
+import game
 
 
 class GUI:
@@ -88,16 +92,16 @@ class GUI:
         screen.blit(quit_game, (self._WIDTH + 40, 750))
 
         # Check if user is hovering over the button for menu
-        # return_to_menu = player_font.render("MENU", True,
-        #                                    self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
-        #                                                   and 699 <= location[1] <= 720 else self._RED)
-        # screen.blit(return_to_menu, (self._WIDTH + 70, 700))
+        return_to_menu = player_font.render("MENU", True,
+                                           self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
+                                                          and 699 <= location[1] <= 720 else self._RED)
+        screen.blit(return_to_menu, (self._WIDTH + 70, 700))
 
         # Check if user is hovering over the button for save game
-        # save_game = player_font.render("SAVE GAME", True,
-        #                               self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
-        #                                              and 649 <= location[1] <= 670 else self._RED)
-        # screen.blit(save_game, (self._WIDTH + 40, 650))
+        save_game = player_font.render("SAVE GAME", True,
+                                      self._WHITE if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208
+                                                     and 649 <= location[1] <= 670 else self._RED)
+        screen.blit(save_game, (self._WIDTH + 40, 650))
 
         score_font = pg.font.Font("data/FROSTBITE.ttf", 70)
         w_score = score_font.render("{%d}" % int(white_score), True, self._WHITE)
@@ -180,7 +184,8 @@ class GUI:
 
                     # Check if user click on the button for quit game
                     if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
-                        win = False
+                        pg.quit()
+                        exit()
 
                     # Check if user click on the button for save game
                     if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
@@ -216,9 +221,10 @@ class GUI:
                         # menu = False
                         return 1
 
-                    # Check if user click on the button for load game (not ready)
+                    # Check if user click on the button for load game
                     elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 699 <= location[1] <= 720:
-                        pass
+                        pg.quit()
+                        game.Game(0, True, is_new_game=False, file_path=self.get_file_path())
 
                     # Check if user click on the button for quit game
                     elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
@@ -250,7 +256,6 @@ class GUI:
 
     def run_game(self, validator, status, players, game_field, game, player_to_turn):
         selectedSQ = ()  # last clicked square (row, col)
-        finalSQ = ()
         valid_moves = []
         player_clicks = []  # most recent 2 clicks of the player
 
@@ -269,7 +274,6 @@ class GUI:
                     col = int(location[0] // self._SQ_SIZE)
                     row = int(location[1] // self._SQ_SIZE)
                     valid_moves = validator.find_all_valid_moves(game, player_to_turn)
-                    # print(valid_moves)
 
                     status = self.buttons_click_check(location, players)
 
@@ -288,9 +292,6 @@ class GUI:
                     if game.check_win(player_to_turn):
                         self.win(self._screen, (PlayerColor.BLACK if player_to_turn==PlayerColor.WHITE else PlayerColor.WHITE), players)
 
-                    # for row in game_field:
-                    #     print(row)
-
             self.draw_game_state(self._screen, validator, selectedSQ, game_field, valid_moves, players, player_to_turn)
             self._clock.tick(self._FPS)
             pg.display.flip()
@@ -302,12 +303,12 @@ class GUI:
         if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
             return False
         # Check if user click on the button for save game
-        # elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
-            # self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
-            # return True
+        elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
+            self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
+            return True
         # Check if user click on the button for return to menu
-        # elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
-            # pass
+        elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+            return True
         else:
             return True
 
@@ -323,8 +324,16 @@ class GUI:
                     if selectedSQ == validator.get_rowcol_from_sq_string(move[0]):
                         moves.append(move[-1])
                 if validator.get_sq_string_from_2D_board(r2, c2) in moves:
-                    # print pro test -> potřeba nahradit funkcí execute_move
                     validator.move_execution(
                         [validator.get_sq_string_from_2D_board(r, c), validator.get_sq_string_from_2D_board(r2, c2)],
                         board, player_to_turn, players)
                     return True
+
+    @staticmethod
+    def get_file_path():
+        """Create a Tk file dialog and cleanup when finished"""
+        top = tkinter.Tk()
+        top.withdraw()  # hide window
+        file_path = tkinter.filedialog.askopenfilename(parent=top)
+        top.destroy()
+        return file_path
