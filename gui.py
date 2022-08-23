@@ -277,12 +277,19 @@ class GUI:
 
                     status = self.buttons_click_check(location, players)
 
-                    if selectedSQ == (row, col):  # selected square is the same as previous one
-                        selectedSQ = ()  # deselect
-                        player_clicks = []
-                    else:
-                        selectedSQ = (row, col)
-                        player_clicks.append(selectedSQ)
+                    # FEATURE REMOVED BECAUSE THERE WAS COLISION WHEN SELECTING CHAINED-JUMP MOVES THAT 
+                    # ENDED ON THE SAME TILE AS THEY STARTED 
+                    #
+                    # if selectedSQ == (row, col):  # selected square is the same as previous one
+                    #     selectedSQ = ()  # deselect
+                    #     player_clicks = []
+                    # else:
+                    #     selectedSQ = (row, col)
+                    #     player_clicks.append(selectedSQ)
+
+                    selectedSQ = (row, col)
+                    player_clicks.append(selectedSQ)
+
                     if len(player_clicks) == 2:  # check if it was 2nd click
                         if self.check_move(validator, valid_moves, player_clicks[0], selectedSQ, game_field, game, player_to_turn, players) == True:
                             player_to_turn = game.next_turn()
