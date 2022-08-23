@@ -91,11 +91,11 @@ class GUI:
                                                       and 749 <= location[1] <= 770 else self._RED)
         screen.blit(quit_game, (self._WIDTH + 40, 750))
 
-        # Check if user is hovering over the button for menu
-        return_to_menu = player_font.render("MENU", True,
-                                           self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
-                                                          and 699 <= location[1] <= 720 else self._RED)
-        screen.blit(return_to_menu, (self._WIDTH + 70, 700))
+        # # Check if user is hovering over the button for menu
+        # return_to_menu = player_font.render("MENU", True,
+        #                                    self._WHITE if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144
+        #                                                   and 699 <= location[1] <= 720 else self._RED)
+        # screen.blit(return_to_menu, (self._WIDTH + 70, 700))
 
         # Check if user is hovering over the button for save game
         save_game = player_font.render("SAVE GAME", True,
@@ -191,9 +191,9 @@ class GUI:
                     if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
                         pass
 
-                    # Check if user click on the button for return to menu
-                    if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
-                        pass
+                    # # Check if user click on the button for return to menu
+                    # if self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+                    #     pass
 
             self.draw_score(self._screen, players[0].get_score(), players[1].get_score())
             pg.display.flip()
@@ -308,14 +308,15 @@ class GUI:
     def buttons_click_check(self, location, players):
         # Check if user click on the button for quit game
         if self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 749 <= location[1] <= 770:
-            return False
+            pg.quit()
+            exit()
         # Check if user click on the button for save game
         elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
             self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
             return True
-        # Check if user click on the button for return to menu
-        elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
-            return True
+        # # Check if user click on the button for return to menu
+        # elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
+        #     return True
         else:
             return True
 
