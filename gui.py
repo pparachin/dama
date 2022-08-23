@@ -4,8 +4,9 @@ from alias import PlayerColor
 from figure import Figure
 from stone import Stone
 import tkinter
-import tkinter.filedialog
+from tkinter.filedialog import FileDialog, asksaveasfilename
 import game
+from validator import Validator
 
 
 class GUI:
@@ -312,7 +313,7 @@ class GUI:
             exit()
         # Check if user click on the button for save game
         elif self._WIDTH + 39 <= location[0] <= self._WIDTH + 208 and 649 <= location[1] <= 670:
-            self.win(self._screen, PlayerColor.WHITE, players)  # Zatím jen pro test win screenu
+            self.save_game(self._board)
             return True
         # # Check if user click on the button for return to menu
         # elif self._WIDTH + 69 <= location[0] <= self._WIDTH + 144 and 699 <= location[1] <= 720:
@@ -345,3 +346,22 @@ class GUI:
         file_path = tkinter.filedialog.askopenfilename(parent=top)
         top.destroy()
         return file_path
+
+
+    def save_game(self, board):
+        data = [("csv file(*.csv)","*.csv")]
+        board_notation = self.notation_csv(board)
+        file = asksaveasfilename(filetypes = data, defaultextension = data)
+        # file will have file name provided by user.
+        # Now we can use this file name to save file.
+        with open(file,"w") as f:
+            f.write(board_notation)
+
+
+    def notation_csv(self, board):
+        notation = ""
+        for row in range(self._DIMENSION):
+            for col in range(self._DIMENSION):
+                if board[row][col] is not None:
+                    notation = notation + Validator().get_sq_string_from_2D_board(row, col) + "," + board[row][col].get_label() + "\n"
+        return notation
