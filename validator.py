@@ -771,19 +771,19 @@ class Validator():
             if not jump_is_possible:
                 break
 
-        # removes unchained jump moves in case chained are available
-        chained_are_available = False
-        for move in output:
-            if len(move) > 2:
-                chained_are_available = True
-                break
-        if chained_are_available:
-            moves_to_be_removed = []
-            for move in output:
-                if len(move) == 2:
-                    moves_to_be_removed.append(move)
-            for move in moves_to_be_removed:
-                output.remove(move)
+        # removes unchained jump moves in case chained are available - code commented out, violation of rule n. 13 - chained jumps are NOT superior to unchained jumps
+        # chained_are_available = False
+        # for move in output:
+        #     if len(move) > 2:
+        #         chained_are_available = True
+        #         break
+        # if chained_are_available:
+        #     moves_to_be_removed = []
+        #     for move in output:
+        #         if len(move) == 2:
+        #             moves_to_be_removed.append(move)
+        #     for move in moves_to_be_removed:
+        #         output.remove(move)
 
         # remove moves which violate rule n. 13 - a figure cannot end its jump on a tile from which it can jump further
         moves_that_break_rule_13 = []
